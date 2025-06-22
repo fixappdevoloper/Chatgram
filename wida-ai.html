@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wida AI </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <style>
+    /* 🔁 Glowing animated background */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      background: linear-gradient(-45deg, #0f0f0f, #1c1c1c, #222, #0e0e0e);
+      background-size: 400% 400%;
+      animation: gradientMove 15s ease infinite;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @keyframes gradientMove {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    header {
+      background: #222;
+      color: white;
+      padding: 14px;
+      font-size: 20px;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    #chatBox {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      max-width: 80%;
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+
+    .user {
+      background: #444;
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .bot {
+      background: #2a2a2a;
+      align-self: flex-start;
+    }
+
+    .input-container {
+      display: flex;
+      padding: 10px;
+      background: #121212;
+      border-top: 1px solid #333;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+
+    .input-container input {
+      flex: 1;
+      padding: 12px;
+      background: #2a2a2a;
+      color: #fff;
+      border: none;
+      border-radius: 10px 0 0 10px;
+      font-size: 16px;
+    }
+
+    .input-container button {
+      padding: 12px 14px;
+      background: white;
+      color: #000;
+      border: none;
+      border-radius: 0 10px 10px 0;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .options {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 8px;
+      background: transparent;
+    }
+
+    .options button {
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+    }
+
+    .image-box {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .image-box img {
+      width: 90%;
+      max-width: 400px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px #00ffa0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <header>Wida AI</header>
+
+  <!-- Chat Messages -->
+  <div id="chatBox">
+    <div class="message bot">👋 Hello! I'm Wida AI, your personal smart assistant.</div>
+  </div>
+
+
+  <!-- Bottom Input Bar -->
+  <div class="input-container">
+    <input type="text" id="userInput" placeholder="Ask anything ">
+    <button onclick="handleUserInput()">Send</button>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const imageBox = document.getElementById('imageBox');
+    const generatedImage = document.getElementById('generatedImage');
+
+    const aiPrompts = [
+      "Futuristic train flying in desert",
+      "Cute kitten with VR headset",
+      "AI robot cooking noodles",
+      "Sunset on a Mars colony",
+      "Magical forest with glowing trees"
+    ];
+
+    function appendMessage(text, sender = "bot") {
+      const div = document.createElement("div");
+      div.className = "message " + sender;
+      chatBox.appendChild(div);
+
+      let i = 0;
+      const interval = setInterval(() => {
+        div.textContent += text[i];
+        i++;
+        if (i >= text.length) clearInterval(interval);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 20);
+    }
+
+    function handleUserInput() {
+      const text = userInput.value.trim();
+      if (!text) return;
+      appendMessage(text, "user");
+
+      const thinking = document.createElement("div");
+      thinking.className = "message bot";
+      thinking.textContent = " Working...";
+      chatBox.appendChild(thinking);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      setTimeout(() => {
+        thinking.remove();
+
+        if (text.toLowerCase().includes("image") || text.toLowerCase().includes("generate")) {
+          appendMessage("🖼️ Generating image...");
+          generateImage(text);
+        } else {
+          const reply = getChatReply(text);
+          appendMessage(reply, "bot");
+        }
+      }, 1000);
+
+      userInput.value = "";
+    }
+
+    function suggestPrompt() {
+      const randomPrompt = aiPrompts[Math.floor(Math.random() * aiPrompts.length)];
+      userInput.value = randomPrompt;
+      appendMessage("💡 AI Suggestion: " + randomPrompt, "bot");
+    }
+
+    function generateImage(text) {
+      const prompt = text || userInput.value.trim();
+      if (!prompt) return appendMessage("⚠️ Please enter a prompt to generate image.", "bot");
+
+      const imgUrl = `https://source.unsplash.com/400x300/?${encodeURIComponent(prompt)}`;
+      generatedImage.src = imgUrl;
+      imageBox.style.display = "block";
+      appendMessage("✅ Image based on: " + prompt, "bot");
+    }
+
+    function getChatReply(msg) {
+      msg = msg.toLowerCase();
+      if (msg.includes("hi") || msg.includes("hello")) return "Hi there! 😊 How can I assist you? कृपया आप बताएं की आपकी हम क्या मदद कर सकते हैं ।";
+      if (msg.includes("help")|| msg.includes("सहायता")) return "कृपया आप हमें बतायें की मै आप की क्या मदद कर सकता हूं?   जैसे:- Coding, prompt, viral video title, आदि बनाने में मदद या शिक्षा से संबंधित कोई प्रश्न हो या कोई भी कार्य करना हो तो उसे आप हमें बताएं!";
+      if (msg.includes("who are you")|| msg.includes("name")|| msg.includes("नाम")|| msg.includes("कौन हो")) return "मैं Wida Ai हूँ - Arun Development Scal द्वारा विकसित एक एआई हूं। आप मुझे अपना सहायक मान सकते हैं: सवालों के जवाब देना 📚. . कोड, स्क्रिप्ट या सामग्री लिखना 🧑‍💻✍️. ऐप/वेबसाइट बनाना और डिज़ाइन करना 🧱📱. पढ़ाई, व्यवसाय या व्यक्तिगत कार्यों में मदद करना 📊📖. और जब भी आप चाहें चैट करना 🤖💬. अगर आप मुझे बताएँ कि आप किस पर काम कर रहे हैं या किस बारे में उत्सुक हैं, तो मैं तुरंत मदद कर सकता हूँ। आज आप क्या करना चाहेंगे?";      if (msg.includes("thank")|| msg.includes("good")|| msg.includes("nice")) return "आपका स्वागत है! . ☺️अगर आपका कुछ बनाना है, तो हमें बताएं कि आप हमसे क्या बनवाना चाहते हैं जैसे- ऐप, डिजाइन, या फीचर्स- तो बस बताइए। मैं तैयार हूं मदद करने के लिए! 💻✨";
+      if (msg.includes("make")) return "🌀 generating...";
+      
+      return "आप  कहना क्या चाहते हैं ? मैं समझने में असमर्थ हूं ! कृपया अपनी बात को स्पष्ट रूप से कहें।";
+    }
+  </script>
+
+</body>
+</html>
