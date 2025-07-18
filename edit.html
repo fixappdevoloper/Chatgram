@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Profile - Chatgram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #fff;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .back {
+      font-size: 18px;
+      color: #f44336;
+      margin-bottom: 20px;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    h2 {
+      font-size: 24px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    .preview {
+      position: relative;
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      background: #4CAF50;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 36px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .overlay-content {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .emoji {
+      font-size: 75px;
+      line-height: 1;
+    }
+
+    .text {
+      font-size: 14px;
+      color: white;
+      text-shadow: 1px 1px 3px black;
+    }
+
+    .smart-input {
+      position: relative;
+      margin-bottom: 25px;
+    }
+
+    .smart-input input {
+      width: 100%;
+      padding: 14px 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      background: transparent;
+    }
+
+    .smart-input label {
+      position: absolute;
+      top: 50%;
+      left: 12px;
+      transform: translateY(-50%);
+      background: #fff;
+      padding: 0 4px;
+      color: #888;
+      font-size: 16px;
+      pointer-events: none;
+      transition: 0.2s ease;
+    }
+
+    .smart-input input:focus + label,
+    .smart-input input:not(:placeholder-shown) + label {
+      top: -8px;
+      left: 10px;
+      font-size: 13px;
+      color: #2196F3;
+    }
+
+    .file-input {
+      margin-bottom: 20px;
+    }
+
+    .file-input label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input[type="file"] {
+      padding: 8px;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      width: 100%;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #2196F3;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background: #1976D2;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="back" onclick="history.back()">← Back</div>
+  <h2>Edit Profile</h2>
+
+  <div class="preview" id="dpPreview">?</div>
+
+  <div class="file-input">
+    <label for="dpInput">Change Profile Picture:</label>
+    <input type="file" id="dpInput" accept="image/*" />
+  </div>
+
+  <div class="smart-input">
+    <input type="text" id="emojiInput" placeholder=" " />
+    <label for="emojiInput">Add Emoji</label>
+  </div>
+
+  <div class="smart-input">
+    <input type="text" id="textOverlayInput" placeholder=" " />
+    <label for="textOverlayInput">Overlay Text</label>
+  </div>
+
+  <div class="smart-input">
+    <input type="text" id="nameInput" placeholder=" " />
+    <label for="nameInput">Full Name</label>
+  </div>
+
+  <div class="smart-input">
+    <input type="text" id="usernameInput" placeholder=" " />
+    <label for="usernameInput">Username</label>
+  </div>
+
+  <button onclick="saveChanges()">Save Changes</button>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const storage = firebase.storage();
+
+    const oldUsername = localStorage.getItem("chat_username");
+    const dpPreview = document.getElementById("dpPreview");
+    const nameInput = document.getElementById("nameInput");
+    const usernameInput = document.getElementById("usernameInput");
+    const emojiInput = document.getElementById("emojiInput");
+    const textOverlayInput = document.getElementById("textOverlayInput");
+
+    let newDpUrl = null;
+
+    // Load user
+    db.ref("users/" + oldUsername).once("value", snap => {
+      const user = snap.val();
+      nameInput.value = user.name || "";
+      usernameInput.value = oldUsername;
+      emojiInput.value = user.dpEmoji || "";
+      textOverlayInput.value = user.dpText || "";
+
+      updateDpPreview(user.dp);
+    });
+
+    function updateDpPreview(dpUrl = null) {
+      dpPreview.innerHTML = "";
+      if (dpUrl) {
+        const img = document.createElement("img");
+        img.src = dpUrl;
+        dpPreview.appendChild(img);
+      } else {
+        const letter = nameInput.value.trim().charAt(0).toUpperCase() || "?";
+        dpPreview.textContent = letter;
+      }
+
+      const overlay = document.createElement("div");
+      overlay.className = "overlay-content";
+      overlay.innerHTML = `
+        <div class="emoji">${emojiInput.value}</div>
+        <div class="text">${textOverlayInput.value}</div>
+      `;
+      dpPreview.appendChild(overlay);
+    }
+
+    document.getElementById("dpInput").addEventListener("change", function () {
+      const file = this.files[0];
+      if (!file) return;
+
+      const ref = storage.ref().child("dp/" + oldUsername + "_" + Date.now());
+      ref.put(file).then(snapshot => snapshot.ref.getDownloadURL())
+      .then(url => {
+        newDpUrl = url;
+        updateDpPreview(url);
+      }).catch(err => {
+        console.error("DP upload failed:", err);
+        alert("Error uploading image.");
+      });
+    });
+
+    emojiInput.addEventListener("input", () => updateDpPreview(newDpUrl));
+    textOverlayInput.addEventListener("input", () => updateDpPreview(newDpUrl));
+    nameInput.addEventListener("input", () => updateDpPreview(newDpUrl));
+
+    function saveChanges() {
+      const newName = nameInput.value.trim();
+      const newUsername = usernameInput.value.trim();
+
+      if (!newName || !newUsername) {
+        alert("Name and username are required.");
+        return;
+      }
+
+      const updateData = {
+        name: newName,
+        dpEmoji: emojiInput.value,
+        dpText: textOverlayInput.value
+      };
+      if (newDpUrl) updateData.dp = newDpUrl;
+
+      if (newUsername !== oldUsername) {
+        db.ref("users/" + oldUsername).once("value", snap => {
+          const userData = snap.val() || {};
+          Object.assign(userData, updateData);
+          db.ref("users/" + newUsername).set(userData, () => {
+            db.ref("users/" + oldUsername).remove();
+            localStorage.setItem("chat_username", newUsername);
+            localStorage.setItem("chat_name", newName);
+            alert("Profile updated.");
+            location.href = "account.html";
+          });
+        });
+      } else {
+        db.ref("users/" + oldUsername).update(updateData, () => {
+          localStorage.setItem("chat_name", newName);
+          alert("Profile updated.");
+          location.href = "account.html";
+        });
+      }
+    }
+  </script>
+
+</body>
+</html>

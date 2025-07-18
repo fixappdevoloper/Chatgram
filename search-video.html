@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search Videos - Chatgram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #f2f2f2;
+    }
+
+    .topbar {
+      background: #ff0000;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .search-box {
+      margin: 10px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .video-list {
+      padding: 10px;
+    }
+
+    .video-card {
+      background: white;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .video-thumb {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .video-info {
+      padding: 10px;
+    }
+
+    .video-title {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .video-user {
+      font-size: 14px;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <span>Search Videos</span>
+    <i class="fas fa-times" onclick="history.back()" style="font-size:20px;cursor:pointer;"></i>
+  </div>
+
+  <!-- Search Input -->
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="Search by title or @username...">
+  </div>
+
+  <!-- Video Results -->
+  <div class="video-list" id="videoList">
+    <!-- Searched videos will load here -->
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const searchInput = document.getElementById("searchInput");
+    const videoList = document.getElementById("videoList");
+
+    searchInput.addEventListener("input", function() {
+      const query = this.value.toLowerCase().trim();
+
+      db.ref("posts").once("value", snapshot => {
+        videoList.innerHTML = "";
+        snapshot.forEach(postSnap => {
+          const post = postSnap.val();
+          if (post.type === "video") {
+            const titleMatch = (post.title || "").toLowerCase().includes(query);
+            const userMatch = (post.user || post.username || "").toLowerCase().includes(query);
+
+            if (query === "" || titleMatch || userMatch) {
+              const card = document.createElement("div");
+              card.className = "video-card";
+
+              const video = document.createElement("video");
+              video.className = "video-thumb";
+              video.src = post.url;
+              video.controls = true;
+
+              const info = document.createElement("div");
+              info.className = "video-info";
+
+              const title = document.createElement("div");
+              title.className = "video-title";
+              title.textContent = post.title || "Untitled";
+
+              const user = document.createElement("div");
+              user.className = "video-user";
+              user.textContent = "@" + (post.user || post.username || "unknown");
+
+              info.appendChild(title);
+              info.appendChild(user);
+              card.appendChild(video);
+              card.appendChild(info);
+              videoList.appendChild(card);
+            }
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

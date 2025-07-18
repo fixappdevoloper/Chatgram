@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Notifications - Chatgram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; margin: 0; background: #f2f2f2; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      background: blueviolet;
+      padding: 10px;
+      color: white;
+    }
+
+    .back-btn {
+      font-size: 20px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .user-list {
+      padding: 10px;
+    }
+
+    .user-item {
+      background: white;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .dp {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: blueviolet;
+      color: white;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-right: 10px;
+    }
+
+    .dp img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .info .name {
+      font-weight: bold;
+    }
+
+    .info .username {
+      color: gray;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="back-btn" onclick="history.back()">‹</div>
+    <div class="title">Notifications</div>
+  </div>
+
+  <div class="user-list" id="userList"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const username = localStorage.getItem("chat_username");
+    const userListDiv = document.getElementById("userList");
+
+    let allUsers = {};
+
+    // Load all users first
+    db.ref("users").once("value", snap => {
+      allUsers = snap.val() || {};
+    });
+
+    // Listen to all chat messages
+    db.ref("chats").on("value", snap => {
+      const chats = snap.val() || {};
+      const contacts = new Set();
+
+      Object.keys(chats).forEach(chatKey => {
+        if (chatKey.includes(username)) {
+          Object.values(chats[chatKey]).forEach(msg => {
+            const otherUser = chatKey.replace(username, "").replace("_", "");
+            if (otherUser !== username) contacts.add(otherUser);
+          });
+        }
+      });
+
+      renderContacts([...contacts]);
+    });
+
+    function renderContacts(users) {
+      userListDiv.innerHTML = "";
+
+      users.forEach(u => {
+        const user = allUsers[u];
+        if (!user) return;
+
+        const div = document.createElement("div");
+        div.className = "user-item";
+        div.onclick = () => {
+          localStorage.setItem("chat_with", u);
+          localStorage.setItem("chat_with_name", user.name || u);
+          location.href = "chat.html";
+        };
+
+        const dp = document.createElement("div");
+        dp.className = "dp";
+
+        if (user.dp) {
+          const img = document.createElement("img");
+          img.src = user.dp;
+          dp.appendChild(img);
+        } else {
+          dp.innerText = user.name ? user.name.charAt(0).toUpperCase() : u.charAt(0).toUpperCase();
+        }
+
+        const info = document.createElement("div");
+        info.className = "info";
+        info.innerHTML = `
+          <div class="name">${user.name || "Unknown"}</div>
+          <div class="username">@${u}</div>
+        `;
+
+        div.appendChild(dp);
+        div.appendChild(info);
+        userListDiv.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

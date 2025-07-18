@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register - Chatgram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 380px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .chatgram-logo {
+      font-family: 'Pacifico', cursive;
+      font-size: 38px;
+      color: #262626;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin: 0 0 20px;
+      font-size: 24px;
+      color: #000;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 12px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+    }
+
+    button {
+      background-color: #3897f0;
+      color: white;
+      font-weight: bold;
+      border: none;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #2f80ed;
+    }
+
+    .field-container {
+      position: relative;
+    }
+
+    .status-icon, .toggle-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .status-icon.success { color: green; }
+    .status-icon.error { color: red; }
+
+    .toggle-icon {
+      color: #555;
+    }
+
+    .policy {
+      font-size: 13px;
+      color: #666;
+      margin: 20px 0;
+    }
+
+    .hidden { display: none; }
+
+    p {
+      font-size: 14px;
+      margin-top: 20px;
+      color: #333;
+    }
+
+    a {
+      color: #3897f0;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="chatgram-logo">Chatgram</div>
+    <h2>Join Chatgram</h2>
+
+    <!-- Step 1 -->
+    <div id="step1">
+      <input id="name" placeholder="Full Name" />
+      <select id="country"></select>
+      <button onclick="goToStep2()">Continue</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="step2" class="hidden">
+      <div class="field-container">
+        <input id="username" placeholder="Choose Username" oninput="validateUsername()" />
+        <i id="usernameStatus" class="status-icon"></i>
+      </div>
+
+      <div class="field-container">
+        <input id="password" type="password" placeholder="Create Password" />
+        <i class="fa fa-eye toggle-icon" onclick="togglePassword(this)"></i>
+      </div>
+
+      <button onclick="goToStep3()">Continue</button>
+    </div>
+
+    <!-- Step 3 -->
+    <div id="step3" class="hidden">
+      <div class="policy">
+        By continuing, you agree to our<br>
+        <a href="#">Privacy Policy</a> & <a href="#">Terms of Service</a>.
+      </div>
+      <button onclick="register()">Accept & Register</button>
+    </div>
+
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce",
+      measurementId: "G-54MCZL1TWP"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const countryList = [
+      "India", "United States", "United Kingdom", "Canada", "Australia", "Germany", "France",
+      "Italy", "Spain", "China", "Japan", "Brazil", "Russia", "Pakistan", "Bangladesh",
+      "Mexico", "Indonesia", "Nigeria", "South Africa", "Argentina", "Turkey", "Philippines",
+      "Saudi Arabia", "Ukraine", "Vietnam", "Netherlands", "Poland", "Other"
+    ];
+
+    const countrySelect = document.getElementById('country');
+    countryList.forEach(country => {
+      const opt = document.createElement("option");
+      opt.value = country;
+      opt.textContent = country;
+      countrySelect.appendChild(opt);
+    });
+
+    function goToStep2() {
+      const name = document.getElementById('name').value.trim();
+      const country = document.getElementById('country').value;
+      if (!name || !country) return alert("Please fill all fields.");
+      document.getElementById('step1').classList.add('hidden');
+      document.getElementById('step2').classList.remove('hidden');
+    }
+
+    function validateUsername() {
+      const username = document.getElementById('username').value.trim();
+      const icon = document.getElementById('usernameStatus');
+
+      if (/[A-Z\s]/.test(username)) {
+        icon.className = "fa fa-times status-icon error";
+        return;
+      }
+
+      if (username.length < 3) {
+        icon.className = "";
+        return;
+      }
+
+      db.ref("users/" + username).once("value", snapshot => {
+        if (snapshot.exists()) {
+          icon.className = "fa fa-times status-icon error";
+        } else {
+          icon.className = "fa fa-check status-icon success";
+        }
+      });
+    }
+
+    function togglePassword(el) {
+      const passwordInput = document.getElementById("password");
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        el.classList.remove("fa-eye");
+        el.classList.add("fa-eye-slash");
+      } else {
+        passwordInput.type = "password";
+        el.classList.remove("fa-eye-slash");
+        el.classList.add("fa-eye");
+      }
+    }
+
+    function goToStep3() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) return alert("Username and password required.");
+      if (/[A-Z\s]/.test(username)) return alert("Username must be lowercase & no spaces.");
+
+      document.getElementById('step2').classList.add('hidden');
+      document.getElementById('step3').classList.remove('hidden');
+    }
+
+    function register() {
+      const name = document.getElementById('name').value.trim();
+      const country = document.getElementById('country').value;
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!name || !country || !username || !password) return alert("All fields required.");
+
+      db.ref("users/" + username).once("value", snapshot => {
+        if (snapshot.exists()) {
+          alert("Username already taken!");
+        } else {
+          db.ref("users/" + username).set({
+            name, country, password
+          }, () => {
+            alert("Registered successfully!");
+            window.location.href = "contacts.html";
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>

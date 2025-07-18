@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Create Post - Chatgram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: sans-serif; background: #f4f4f4; }
+
+    .topbar {
+      background: #6a1b9a;
+      color: white;
+      padding: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .back-btn {
+      font-size: 20px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .top-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .content {
+      padding: 15px;
+      margin-bottom: 80px;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    .preview img, .preview video {
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    .post-btn, .select-btn {
+      background: #6a1b9a;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      width: 100%;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      background: white;
+      border-top: 1px solid #ccc;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      z-index: 10;
+    }
+
+    .tabs div {
+      padding: 12px;
+      flex: 1;
+      text-align: center;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tabs .active {
+      background: #6a1b9a;
+      color: white;
+    }
+
+    input[type="file"] { display: none; }
+  </style>
+<script>
+  window.addEventListener('load', () => {
+    function checkConnection() {
+      if (!navigator.onLine) {
+        window.location.href = "no-connection.html";
+      }
+    }
+    window.addEventListener("offline", checkConnection);
+    checkConnection();
+  });
+</script>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="back-btn" onclick="history.back()">←</div>
+    <div class="top-title">Create Post</div>
+  </div>
+
+  <div class="content" id="contentBox">
+    <!-- VIDEO FORM -->
+    <div id="videoForm" class="form-section">
+      <button class="select-btn" onclick="document.getElementById('videoInput').click()">Select Video</button>
+      <input type="file" accept="video/*" id="videoInput">
+      <input type="text" placeholder="Title" id="videoTitle">
+      <textarea placeholder="Description (optional)" id="videoDesc"></textarea>
+      <div class="preview" id="videoPreview"></div>
+      <button class="post-btn" onclick="submitPost('video')">Post Video</button>
+    </div>
+
+    <!-- IMAGE FORM -->
+    <div id="imageForm" class="form-section" style="display:none;">
+      <button class="select-btn" onclick="document.getElementById('imageInput').click()">Select Image</button>
+      <input type="file" accept="image/*" id="imageInput">
+      <input type="text" placeholder="Title" id="imageTitle">
+      <div class="preview" id="imagePreview"></div>
+      <button class="post-btn" onclick="submitPost('image')">Post Image</button>
+    </div>
+
+    <!-- REEL FORM -->
+    <div id="reelForm" class="form-section" style="display:none;">
+      <button class="select-btn" onclick="document.getElementById('reelInput').click()">Select Reel</button>
+      <input type="file" accept="video/*" id="reelInput">
+      <input type="text" placeholder="Title" id="reelTitle">
+      <div class="preview" id="reelPreview"></div>
+      <button class="post-btn" onclick="submitPost('reel')">Post Reel</button>
+    </div>
+
+    <!-- BLOG FORM -->
+    <div id="blogForm" class="form-section" style="display:none;">
+      <input type="text" placeholder="Blog Title" id="blogTitle">
+      <textarea placeholder="Write your blog..." id="blogText"></textarea>
+      <button class="post-btn" onclick="submitPost('blog')">Post Blog</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="active" onclick="showForm('video', this)">Video</div>
+    <div onclick="showForm('image', this)">Image</div>
+    <div onclick="showForm('reel', this)">Reels</div>
+    <div onclick="showForm('blog', this)">Blog</div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const storage = firebase.storage();
+
+    const username = localStorage.getItem("chat_username");
+    const name = localStorage.getItem("chat_name");
+
+    function showForm(type, tab) {
+      document.querySelectorAll('.form-section').forEach(f => f.style.display = 'none');
+      document.getElementById(type + 'Form').style.display = 'block';
+      document.querySelectorAll('.tabs div').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    }
+
+    function previewFile(inputId, previewId, type) {
+      const input = document.getElementById(inputId);
+      input.onchange = () => {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById(previewId).innerHTML =
+            type === 'image' ? `<img src="${reader.result}">` :
+                               `<video src="${reader.result}" controls></video>`;
+        };
+        reader.readAsDataURL(file);
+      };
+    }
+
+    previewFile('videoInput', 'videoPreview', 'video');
+    previewFile('imageInput', 'imagePreview', 'image');
+    previewFile('reelInput', 'reelPreview', 'video');
+
+    function submitPost(type) {
+      let fileInput, title = "", desc = "", content = "";
+
+      if (type === 'blog') {
+        title = document.getElementById("blogTitle").value.trim();
+        content = document.getElementById("blogText").value.trim();
+        if (!title || !content) return alert("Fill blog title and content.");
+        return savePost({ title, content, type });
+      }
+
+      if (type === 'video') {
+        fileInput = document.getElementById('videoInput');
+        title = document.getElementById('videoTitle').value.trim();
+        desc = document.getElementById('videoDesc').value.trim();
+      } else if (type === 'image') {
+        fileInput = document.getElementById('imageInput');
+        title = document.getElementById('imageTitle').value.trim();
+      } else if (type === 'reel') {
+        fileInput = document.getElementById('reelInput');
+        title = document.getElementById('reelTitle').value.trim();
+      }
+
+      const file = fileInput.files[0];
+      if (!file || !title) return alert("Select file and add title");
+
+      const ref = storage.ref("posts/" + Date.now() + "_" + file.name);
+      ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
+        savePost({ title, content: url, description: desc, type });
+      });
+    }
+
+    function savePost({ title, content, description = "", type }) {
+      const postId = db.ref("posts").push().key;
+      db.ref("posts/" + postId).set({
+        title,
+        content,
+        description,
+        type,
+        username,
+        name,
+        timestamp: Date.now()
+      }).then(() => {
+        alert("Posted successfully!");
+        location.href = "account.html";
+      });
+    }
+  </script>
+</body>
+</html>

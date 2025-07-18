@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Play Video</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #fff;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background: blueviolet;
+      color: white;
+    }
+
+    .header i {
+      font-size: 24px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .video-container {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+    }
+
+    .video-container iframe {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .video-info {
+      padding: 10px;
+    }
+
+    .video-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .video-stats {
+      font-size: 14px;
+      color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .action-icons i {
+      margin-left: 15px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #333;
+    }
+
+    .channel-section {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-top: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .channel-section img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .channel-info {
+      flex: 1;
+      margin-left: 10px;
+    }
+
+    .channel-info h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .channel-info small {
+      color: gray;
+    }
+
+    .subscribe-btn {
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 5px 12px;
+      cursor: pointer;
+    }
+
+    .related-videos {
+      padding: 10px;
+    }
+
+    .related-video {
+      display: flex;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+
+    .related-video img {
+      width: 120px;
+      height: 70px;
+      border-radius: 8px;
+    }
+
+    .related-video-info {
+      margin-left: 10px;
+      font-size: 14px;
+    }
+
+    .related-video-info b {
+      display: block;
+    }
+
+    @media screen and (max-width: 600px) {
+      .video-title {
+        font-size: 16px;
+      }
+      .action-icons i {
+        font-size: 18px;
+      }
+      .channel-info h4 {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <i class="bi bi-arrow-left-circle-fill" onclick="history.back()"></i>
+  <div style="font-weight:bold; font-size:18px;">Play Video</div>
+</div>
+
+<div class="video-container">
+  <iframe id="ytplayer" src="" allowfullscreen></iframe>
+</div>
+
+<div class="video-info">
+  <div class="video-title" id="videoTitle">Loading title...</div>
+  <div class="video-stats">
+    <span id="videoViews">0 views • Today</span>
+    <div class="action-icons">
+      <i class="bi bi-hand-thumbs-up"></i>
+      <i class="bi bi-share-fill"></i>
+      <i class="bi bi-download"></i>
+    </div>
+  </div>
+</div>
+
+<div class="channel-section">
+  <img src="https://i.pravatar.cc/150?img=12" />
+  <div class="channel-info">
+    <h4 id="channelName">Channel Name</h4>
+    <small>1.2M subscribers</small>
+  </div>
+  <button class="subscribe-btn">SUBSCRIBE</button>
+</div>
+
+<div class="related-videos" id="relatedList"></div>
+
+<script>
+  const videoData = {
+    "1nFHZX50YOY": {
+      title: "ABC Songs for Kids",
+      views: "1.2M views • 1 week ago",
+      channel: "Kids World"
+    },
+    "ypiwpw1RrJM": {
+      title: "Numbers Song",
+      views: "850K views • 3 days ago",
+      channel: "Nursery Fun"
+    },
+    "v69kJLHKygk": {
+      title: "Animal Sounds",
+      views: "940K views • 2 weeks ago",
+      channel: "Kids Zoo"
+    },
+    "siUvNRALTho": {
+      title: "Colors & Shapes",
+      views: "720K views • 5 days ago",
+      channel: "Learning Land"
+    },
+    "YxxqI8yv7BM": {
+      title: "Days of the Week",
+      views: "1.1M views • 1 month ago",
+      channel: "Smart Kids"
+    },
+    "f_pbUB1r3lM": {
+      title: "Twinkle Twinkle",
+      views: "2.3M views • 2 months ago",
+      channel: "Rhymes Time"
+    },
+    "XbIV-KHDBCY": {
+      title: "Alphabet Train",
+      views: "640K views • 6 days ago",
+      channel: "Toddler Tunes"
+    }
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  const videoId = params.get("id");
+
+  if (videoId && videoData[videoId]) {
+    const info = videoData[videoId];
+    document.getElementById("ytplayer").src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+    document.getElementById("videoTitle").innerText = info.title;
+    document.getElementById("videoViews").innerText = info.views;
+    document.getElementById("channelName").innerText = info.channel;
+  } else {
+    alert("Video not found");
+  }
+
+  const relatedList = document.getElementById("relatedList");
+  Object.keys(videoData).forEach(id => {
+    if (id !== videoId) {
+      const data = videoData[id];
+      const div = document.createElement("div");
+      div.className = "related-video";
+      div.onclick = () => window.location.href = `play-video.html?id=${id}`;
+      div.innerHTML = `
+        <img src="https://img.youtube.com/vi/${id}/0.jpg">
+        <div class="related-video-info">
+          <b>${data.title}</b>
+          <span>${data.channel}</span><br>
+          <span>${data.views}</span>
+        </div>
+      `;
+      relatedList.appendChild(div);
+    }
+  });
+</script>
+
+</body>
+</html>

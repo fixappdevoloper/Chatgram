@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Videos - Chatgram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #f9f9f9;
+      padding-bottom: 60px;
+    }
+
+    .topbar {
+      background: blueviolet;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .topbar-title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .open-btn {
+      background: white;
+      color: blueviolet;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: space-around;
+      background: #fff;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 0;
+      font-weight: bold;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .tab.active {
+      color: #ff0000;
+      border-bottom: 2px solid #ff0000;
+    }
+
+    .video-list {
+      padding: 10px;
+    }
+
+    .video-card {
+      background: white;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .video-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .video-header .user {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+    }
+
+    .user-name {
+      font-weight: bold;
+    }
+
+    .follow-btn {
+      background: #ff0066;
+      color: white;
+      border: none;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .video-thumb {
+      width: 100%;
+      max-height: 300px;
+      object-fit: cover;
+    }
+
+    .video-info {
+      padding: 10px;
+    }
+
+    .video-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .video-actions {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      font-size: 14px;
+      color: #555;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+
+    .bottom-nav i {
+      font-size: 22px;
+      color: red;
+    }
+
+    .bottom-nav .active {
+      color: blueviolet;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-title">Videos</div>
+    <button class="open-btn" onclick="goTo('kids.html')">Videogram</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="filterPosts('all', this)">All</div>
+    <div class="tab" onclick="filterPosts('video', this)">Video</div>
+    <div class="tab" onclick="filterPosts('reels', this)">Reels</div>
+    <div class="tab" onclick="filterPosts('image', this)">Image</div>
+    <div class="tab" onclick="filterPosts('blog', this)">Blog</div>
+  </div>
+
+  <!-- Post List -->
+  <div class="video-list" id="videoList"></div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <i class="fas fa-home" onclick="goTo('contacts.html')"></i>
+    <i class="fas fa-video active" onclick="goTo('video.html')"></i>
+    <i class="fas fa-plus-circle" onclick="goTo('post.html')"></i>
+    <i class="fas fa-user" onclick="goTo('account.html')"></i>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const videoList = document.getElementById("videoList");
+    let allPosts = [];
+
+    db.ref("posts").on("value", snap => {
+      allPosts = [];
+      videoList.innerHTML = "";
+      const data = snap.val() || {};
+      Object.entries(data).reverse().forEach(([id, post]) => {
+        post.id = id;
+        allPosts.push(post);
+      });
+      filterPosts("all", document.querySelector(".tab.active"));
+    });
+
+    function filterPosts(type, el) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      el.classList.add("active");
+      videoList.innerHTML = "";
+
+      const filtered = type === "all" ? allPosts : allPosts.filter(p => p.type === type);
+
+      filtered.forEach(post => {
+        const card = document.createElement("div");
+        card.className = "video-card";
+
+        // User header
+        const header = document.createElement("div");
+        header.className = "video-header";
+        header.innerHTML = `
+          <div class="user">
+            <img src="${post.dp || 'user.png'}">
+            <div class="user-name">@${post.username || "unknown"}</div>
+          </div>
+          <button class="follow-btn">Follow</button>
+        `;
+
+        // Media
+        let media = "";
+        if (["video", "reels"].includes(post.type)) {
+          media = `<video class="video-thumb" src="${post.content}" controls></video>`;
+        } else if (post.type === "image") {
+          media = `<img class="video-thumb" src="${post.content}">`;
+        } else if (post.type === "blog") {
+          media = `<div class="video-info"><div class="video-title">📝 ${post.title || "Blog"}</div><p>${post.content.slice(0, 100)}...</p></div>`;
+        }
+
+        // Title and Info
+        const info = document.createElement("div");
+        info.className = "video-info";
+        if (post.type !== "blog") {
+          info.innerHTML = `<div class="video-title">${post.title || "Untitled"}</div>`;
+        }
+
+        // Like & Comment section
+        const actions = document.createElement("div");
+        actions.className = "video-actions";
+        actions.innerHTML = `
+          <span><i class="fas fa-heart"></i> <span id="like-${post.id}">0</span></span>
+          <span><i class="fas fa-comment"></i> <span id="comment-${post.id}">0</span></span>
+        `;
+
+        card.appendChild(header);
+        card.innerHTML += media;
+        card.appendChild(info);
+        card.appendChild(actions);
+        videoList.appendChild(card);
+
+        // Real-time like & comment count
+        db.ref("likes/" + post.id).on("value", snap => {
+          document.getElementById("like-" + post.id).textContent = snap.numChildren();
+        });
+        db.ref("comments/" + post.id).on("value", snap => {
+          document.getElementById("comment-" + post.id).textContent = snap.numChildren();
+        });
+      });
+    }
+
+    function goTo(page) {
+      location.href = page;
+    }
+  </script>
+</body>
+</html>

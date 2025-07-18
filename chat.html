@@ -1,0 +1,265 @@
+<!DOCTYPE html>  
+<html>  
+<head>  
+  <title>Chatgram - Chat</title>  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
+  <style>  
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #fff; display: flex; flex-direction: column; height: 100vh; }  
+    .header {  
+      background: blueviolet; color: white; padding: 10px; display: flex; align-items: center;  
+    }  
+    .header i { font-size: 20px; cursor: pointer; }  
+    .header .name { font-size: 18px; font-weight: bold; margin-left: 10px; }  
+    .menu-wrapper { margin-left: auto; position: relative; }  
+    .menu-options {  
+      display: none; position: absolute; top: 30px; right: 0; background: white; color: black;  
+      border: 1px solid #ccc; border-radius: 10px; z-index: 999;  
+    }  
+    .menu-options div {  
+      padding: 10px; border-bottom: 1px solid #eee; cursor: pointer;  
+    }  
+    .menu-options div:last-child { border-bottom: none; }  
+  
+    .chat-box {  
+      flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column;  
+    }  
+  
+    .message {  
+      max-width: 70%; margin-bottom: 10px; padding: 10px;
+       border-radius: 20px;
+       word-wrap: break-word; line-height: 1.4;
+    }  
+    .sent { align-self: flex-end; color: white; background: blueviolet;
+      border-bottom-right-radius: 4px;
+    }  
+    .received { align-self: flex-start; color: white; background: red;
+      border-bottom-left-radius: 4px;
+      cursor: pointer; transition: transform 0.3s;
+    }  
+    .message img, .message video {  
+      max-width: 100%; border-radius: 8px; margin-top: 5px;  
+    }  
+  
+    .input-box {  
+      display: flex; padding: 10px; background: white; gap: 5px; align-items: center;  
+    }  
+    .input-box input[type="text"] {  
+      flex: 1; padding: 10px; border-radius: 20px; border: 2px solid #000;  
+    }  
+    .input-box input[type="file"] { display: none; }  
+    .input-box button, .input-box label {  
+      background: blueviolet; color: white; padding: 8px 12px; border: none;  
+      border-radius: 50%; font-size: 18px; cursor: pointer;  
+    }  
+  
+    #previewModal {  
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;  
+      background: #000000cc; justify-content: center; align-items: center;  
+      flex-direction: column; z-index: 999;  
+    }  
+    #previewContent {  
+      max-width: 90%; max-height: 60%; margin-bottom: 10px;  
+    }  
+    #previewCaption {  
+      padding: 10px; width: 80%; border-radius: 20px; border: none; outline: none;  
+    }  
+  </style>  
+</head>  
+<body>  
+  
+  <div class="header">  
+    <i class="fas fa-arrow-left" onclick="history.back()"></i>  
+    <span class="name" id="chatWith">Chat</span>  
+    <div class="menu-wrapper">  
+      <i class="fas fa-ellipsis-v" onclick="toggleMenu()"></i>  
+      <div class="menu-options" id="menuOptions">  
+        <div onclick="viewProfile()">View Profile</div>  
+        <div onclick="openSettings()">Settings</div>  
+        <div onclick="toggleBlock()" id="blockBtn">Block</div>  
+        <div onclick="unfollow()">Unfollow</div>  
+      </div>  
+    </div>  
+  </div>  
+  
+  <div class="chat-box" id="chatBox"></div>  
+  
+  <div class="input-box">  
+    <label for="media"><i class="fas fa-paperclip"></i></label>  
+    <input type="file" id="media" accept="image/*,video/*">  
+    <input type="text" id="msg" placeholder="Type a message" />  
+    <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>  
+  </div>  
+  
+  <div id="previewModal">  
+    <div id="previewContent"></div>  
+    <input type="text" id="previewCaption" placeholder="Add a caption..." />  
+    <div style="margin-top:10px;">  
+      <button onclick="sendPreview()" style="padding:10px 20px; background:blueviolet; color:white; border:none; border-radius:20px;">Send</button>  
+      <button onclick="closePreview()" style="padding:10px 20px; background:gray; color:white; border:none; border-radius:20px;">Cancel</button>  
+    </div>  
+  </div>  
+  
+  <!-- Firebase -->  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>  
+<script>  
+  const firebaseConfig = {  
+    apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",  
+    authDomain: "chatgram-app-a.firebaseapp.com",  
+    databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",  
+    projectId: "chatgram-app-a",  
+    storageBucket: "chatgram-app-a.appspot.com",  
+    messagingSenderId: "1067753841739",  
+    appId: "1:1067753841739:web:6f14d525d89737172799ce"  
+  };  
+  firebase.initializeApp(firebaseConfig);  
+  const db = firebase.database();  
+  const storage = firebase.storage();  
+  
+  const sender = localStorage.getItem("chat_username");  
+  const receiver = localStorage.getItem("chat_with");  
+  const receiverName = localStorage.getItem("chat_with_name");  
+  document.getElementById("chatWith").innerText = receiverName;  
+  
+  const chatId = sender < receiver ? `${sender}_${receiver}` : `${receiver}_${sender}`;  
+  const chatBox = document.getElementById("chatBox");  
+  let isBlocked = localStorage.getItem(chatId + "_blocked") === "true";  
+  
+  // MENU  
+  function toggleMenu() {  
+    const menu = document.getElementById("menuOptions");  
+    menu.style.display = menu.style.display === "block" ? "none" : "block";  
+  }  
+  
+  function viewProfile() {  
+    window.location.href = "users-profile.html";  
+  }  
+  
+  function openSettings() {  
+    window.location.href = "settings.html";  
+  }  
+  
+  function toggleBlock() {  
+    isBlocked = !isBlocked;  
+    localStorage.setItem(chatId + "_blocked", isBlocked);  
+    document.getElementById("blockBtn").innerText = isBlocked ? "Unblock" : "Block";  
+    alert(isBlocked ? "Chat blocked" : "Chat unblocked");  
+  }  
+  
+  function unfollow() {  
+    alert("Unfollowed successfully");  
+  }  
+  
+  // Chat listener  
+  db.ref("chats/" + chatId).on("child_added", snap => {  
+    const data = snap.val();  
+    const div = document.createElement("div");  
+    div.className = "message " + (data.sender === sender ? "sent" : "received");  
+  
+    const time = new Date(data.timestamp || Date.now());  
+    const formattedTime = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;  
+  
+    if (data.type === "text") {  
+      div.innerHTML = `${data.message}<div style="font-size:11px; text-align:right; color:#ccc;">${formattedTime}</div>`;  
+    } else if (data.type === "image") {  
+      div.innerHTML = `<img src="${data.message}" alt="Image" /><div>${data.caption || ""}</div><div style="font-size:11px; text-align:right; color:#ccc;">${formattedTime}</div>`;  
+    } else if (data.type === "video") {  
+      div.innerHTML = `<video controls src="${data.message}"></video><div>${data.caption || ""}</div><div style="font-size:11px; text-align:right; color:#ccc;">${formattedTime}</div>`;  
+    }  
+  
+    chatBox.appendChild(div);  
+    chatBox.scrollTop = chatBox.scrollHeight;  
+  });  
+  
+  // Send Message  
+  function sendMessage() {  
+    const msg = document.getElementById("msg").value.trim();  
+    if (msg === "" || isBlocked) return;  
+    db.ref("chats/" + chatId).push({  
+      sender, message: msg, type: "text", timestamp: Date.now()  
+    });  
+    document.getElementById("msg").value = "";  
+    setTyping(false);  
+  }  
+  
+  // Media Preview  
+  let selectedFile = null;  
+  let selectedType = null;  
+  
+  document.getElementById("media").addEventListener("change", function () {  
+    selectedFile = this.files[0];  
+    if (!selectedFile) return;  
+    selectedType = selectedFile.type.startsWith("image") ? "image" :  
+                   selectedFile.type.startsWith("video") ? "video" : null;  
+    if (!selectedType) return alert("Only image/video allowed");  
+  
+    const url = URL.createObjectURL(selectedFile);  
+    const preview = document.getElementById("previewContent");  
+    preview.innerHTML = selectedType === "image"  
+      ? `<img src="${url}" style="max-width:100%; max-height:100%;">`  
+      : `<video controls src="${url}" style="max-width:100%; max-height:100%;"></video>`;  
+    document.getElementById("previewModal").style.display = "flex";  
+  });  
+  
+  function sendPreview() {  
+    if (!selectedFile || !selectedType || isBlocked) return;  
+    const caption = document.getElementById("previewCaption").value.trim();  
+    const fileName = `${chatId}/${Date.now()}_${selectedFile.name}`;  
+    const ref = storage.ref().child(fileName);  
+    ref.put(selectedFile).then(snapshot => snapshot.ref.getDownloadURL())  
+      .then(url => {  
+        db.ref("chats/" + chatId).push({  
+          sender, message: url, type: selectedType, caption: caption || "", timestamp: Date.now()  
+        });  
+        closePreview();  
+      });  
+  }  
+  
+  function closePreview() {  
+    selectedFile = null;  
+    selectedType = null;  
+    document.getElementById("previewModal").style.display = "none";  
+    document.getElementById("previewCaption").value = "";  
+    document.getElementById("media").value = "";  
+  }  
+  
+  // Block status on load  
+  document.addEventListener("DOMContentLoaded", () => {  
+    document.getElementById("blockBtn").innerText = isBlocked ? "Unblock" : "Block";  
+  });  
+  
+  // TYPING + ONLINE STATUS  
+  const statusRef = db.ref("status/" + receiver);  
+  
+  // Show typing or online in header  
+  db.ref("status/" + receiver).on("value", snap => {  
+    const status = snap.val();  
+    if (!status) return;  
+    const nameEl = document.getElementById("chatWith");  
+    nameEl.innerText = receiverName + " - " + (status.typing ? "typing..." : "online");  
+  });  
+  
+  // Detect typing  
+  const msgInput = document.getElementById("msg");  
+  let typingTimeout = null;  
+  
+  msgInput.addEventListener("input", () => {  
+    setTyping(true);  
+    clearTimeout(typingTimeout);  
+    typingTimeout = setTimeout(() => setTyping(false), 2000);  
+  });  
+  
+  function setTyping(isTyping) {  
+    db.ref("status/" + sender).set({ typing: isTyping });  
+  }  
+  
+  // Set online status  
+  db.ref("status/" + sender).set({ typing: false });  
+  window.addEventListener("beforeunload", () => {  
+    db.ref("status/" + sender).remove();  
+  });  
+</script>  
+</body>  
+</html> 

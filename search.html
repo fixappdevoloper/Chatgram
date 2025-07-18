@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Search - Chatgram</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #fff, #fff);
+      padding-bottom: 60px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      background: white;
+      padding: 12px;
+      color: white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .back-btn {
+      font-size: 22px;
+      margin-right: 10px;
+      cursor: pointer;
+      color: #333;
+    }
+
+    .topbar input {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 25px;
+      font-size: 16px;
+      outline: none;
+      color: black;
+    }
+
+    .user-list {
+      padding: 12px;
+    }
+
+    .user-item {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(5px);
+      border-radius: 15px;
+      padding: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+     
+      transition: transform 0.2s ease;
+    }
+
+    .user-item:hover {
+      transform: scale(1.02);
+    }
+
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dp {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: blueviolet;
+      color: white;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .dp img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .info .name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .info .username {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .follow-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      background: blueviolet;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .follow-btn.following {
+      background: #f2f2f2;
+      color: #09999999;
+    }
+
+    .follow-btn:hover {
+      opacity: 0.9;
+    }
+
+    @media (max-width: 500px) {
+      .dp {
+        width: 45px;
+        height: 45px;
+      }
+
+      .info .name {
+        font-size: 15px;
+      }
+
+      .follow-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></div>
+    <input type="text" id="searchInput" placeholder="Search name or username..." oninput="searchUsers()" />
+  </div>
+
+  <div class="user-list" id="userList"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const currentUser = localStorage.getItem("chat_username");
+    let allUsers = {};
+
+    db.ref("users").on("value", snap => {
+      allUsers = snap.val() || {};
+      searchUsers();
+    });
+
+    function searchUsers() {
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
+      const container = document.getElementById("userList");
+      container.innerHTML = "";
+
+      for (let username in allUsers) {
+        const user = allUsers[username];
+        const nameMatch = user.name && user.name.toLowerCase().includes(keyword);
+        const usernameMatch = username.toLowerCase().includes(keyword);
+
+        if ((nameMatch || usernameMatch) && username !== currentUser) {
+          const div = document.createElement("div");
+          div.className = "user-item";
+
+          const left = document.createElement("div");
+          left.className = "left";
+
+          const dp = document.createElement("div");
+          dp.className = "dp";
+          if (user.dp) {
+            const img = document.createElement("img");
+            img.src = user.dp;
+            dp.appendChild(img);
+          } else {
+            dp.innerText = user.name ? user.name.charAt(0).toUpperCase() : "?";
+          }
+
+          const info = document.createElement("div");
+          info.className = "info";
+          info.innerHTML = `<div class="name">${user.name}</div><div class="username">@${username}</div>`;
+
+          left.appendChild(dp);
+          left.appendChild(info);
+
+          const followBtn = document.createElement("button");
+          followBtn.className = "follow-btn";
+          followBtn.innerText = "Follow";
+
+          db.ref("followers/" + currentUser + "/" + username).once("value", snap => {
+            if (snap.exists()) {
+              followBtn.innerText = "Following";
+              followBtn.classList.add("following");
+            }
+          });
+
+          followBtn.onclick = (e) => {
+            e.stopPropagation();
+            const followRef = db.ref("followers/" + currentUser + "/" + username);
+            followRef.once("value", snap => {
+              if (snap.exists()) {
+                followRef.remove();
+                followBtn.innerText = "Follow";
+                followBtn.classList.remove("following");
+              } else {
+                followRef.set(true);
+                followBtn.innerText = "Following";
+                followBtn.classList.add("following");
+              }
+            });
+          };
+
+          div.onclick = () => {
+            db.ref("followers/" + currentUser + "/" + username).once("value", snap => {
+              if (snap.exists()) {
+                localStorage.setItem("chat_with", username);
+                localStorage.setItem("chat_with_name", user.name);
+                location.href = "chat.html";
+              } else {
+                alert("Follow this user to start chatting.");
+              }
+            });
+          };
+
+          div.appendChild(left);
+          div.appendChild(followBtn);
+          container.appendChild(div);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

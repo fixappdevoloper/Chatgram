@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chatgram - Contacts</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #fff;
+    }
+
+    .topbar {
+      background: blueviolet;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .topbar span {
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .icons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .icons i {
+      font-size: 20px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 30px;
+      right: 0;
+      background: white;
+      border-radius: 6px;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+
+    .dropdown-menu.show { display: flex; }
+
+    .dropdown-menu button {
+      padding: 10px;
+      background: white;
+      border: none;
+      font-size: 16px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .dropdown-menu button:hover {
+      background: #f0f0f0;
+    }
+
+    .user {
+      background: white;
+      padding: 10px;
+      margin: 8px 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .dp {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: blueviolet;
+      color: white;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .dp img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    }
+
+    .bottom-nav i {
+      font-size: 22px;
+      color: red;
+    }
+
+    .bottom-nav .active {
+      color: blueviolet;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <span>Chatgram</span>
+    <div class="icons">
+      <i class="fas fa-search" onclick="goTo('search.html')"></i>
+      <i class="fas fa-heart" onclick="goTo('notification.html')"></i>
+      <div class="dropdown">
+        <i class="fas fa-cog" onclick="toggleMenu(event)"></i>
+        <div class="dropdown-menu" id="menu">
+          <button onclick="goTo('profile-settings.html')">Profile Settings</button>
+          <button onclick="goTo('account.html')">Profile</button>
+          <button onclick="goTo('settings.html')">Settings</button>
+          <button onclick="goTo('info.html')">App Info</button>
+          <button onclick="goTo('group.html')">Join World Group</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact List -->
+  <div id="userList"><h3 style="padding:10px;">Chat Contacts:</h3></div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <i class="fas fa-home active" onclick="goTo('contacts.html')"></i>
+    <i class="fas fa-video" onclick="goTo('video.html')"></i>
+    <i class="fas fa-plus-circle" onclick="goTo('post.html')"></i>
+    <i class="fas fa-user" onclick="goTo('account.html')"></i>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const username = localStorage.getItem("chat_username");
+    const userList = document.getElementById("userList");
+
+    if (!username) location.href = "login.html";
+
+    // ✅ Set current user online
+    db.ref("status/" + username).set({ typing: false });
+    window.addEventListener("beforeunload", () => {
+      db.ref("status/" + username).remove();
+    });
+
+    db.ref("users").on("value", snap => {
+      userList.innerHTML = "<h3 style='padding:10px'>Chat Contacts:</h3>";
+      snap.forEach(user => {
+        const uname = user.key;
+        const data = user.val();
+
+        if (uname !== username) {
+          db.ref("followers/" + username + "/" + uname).once("value", followSnap => {
+            if (followSnap.exists()) {
+              const div = document.createElement("div");
+              div.className = "user";
+
+              const left = document.createElement("div");
+              left.className = "left";
+
+              const dp = document.createElement("div");
+              dp.className = "dp";
+              dp.onclick = (e) => {
+                e.stopPropagation();
+                localStorage.setItem("profile_user", uname);
+                location.href = "users-profile.html";
+              };
+
+              if (data.dp) {
+                const img = document.createElement("img");
+                img.src = data.dp;
+                dp.appendChild(img);
+              } else {
+                dp.innerText = data.name ? data.name.charAt(0).toUpperCase() : uname.charAt(0).toUpperCase();
+              }
+
+              const info = document.createElement("div");
+              info.innerHTML = `
+                <b>${data.name}</b><br>
+                <small>@${uname}</small><br>
+                <span id="status-${uname}" style="font-size:12px; color:gray;">Loading...</span>
+              `;
+
+              left.appendChild(dp);
+              left.appendChild(info);
+              div.appendChild(left);
+
+              div.onclick = () => {
+                localStorage.setItem("chat_with", uname);
+                localStorage.setItem("chat_with_name", data.name);
+                location.href = "chat.html";
+              };
+
+              userList.appendChild(div);
+
+              // ✅ Real-time online/offline status
+              db.ref("status/" + uname).on("value", statusSnap => {
+                const status = statusSnap.val();
+                const statusEl = document.getElementById("status-" + uname);
+                if (statusEl) {
+                  if (status && status.typing !== undefined) {
+                    statusEl.innerText = "Online";
+                    statusEl.style.color = "green";
+                  } else {
+                    statusEl.innerText = "Offline";
+                    statusEl.style.color = "gray";
+                  }
+                }
+              });
+            }
+          });
+        }
+      });
+    });
+
+    function goTo(page) {
+      location.href = page;
+    }
+
+    function toggleMenu(e) {
+      e.stopPropagation();
+      document.getElementById("menu").classList.toggle("show");
+    }
+
+    window.addEventListener("click", () => {
+      const menu = document.getElementById("menu");
+      if (menu) menu.classList.remove("show");
+    });
+  </script>
+</body>
+</html>

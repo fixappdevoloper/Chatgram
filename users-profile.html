@@ -1,0 +1,408 @@
+<!DOCTYPE html>      
+<html lang="en">      
+<head>      
+  <meta charset="UTF-8" />      
+  <title>User Profile - Chatgram</title>      
+  <meta name="viewport" content="width=device-width, initial-scale=1" />      
+  <link      
+    rel="stylesheet"      
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"      
+  />      
+  <style>      
+    body {      
+      margin: 0;      
+      font-family: 'Arial', sans-serif;      
+      background: #fff;      
+      color: #333;      
+      padding-bottom: 60px;      
+    }      
+      
+    .topbar {      
+      background: blueviolet;      
+      padding: 10px 16px;      
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);      
+      display: flex;      
+      justify-content: space-between;      
+      align-items: center;      
+      position: sticky;      
+      top: 0;      
+      z-index: 100;      
+      color: white;      
+    }      
+      
+    .topbar i {      
+      font-size: 22px;      
+      cursor: pointer;      
+    }      
+      
+    .topbar-title {      
+      font-weight: bold;      
+      font-size: 18px;      
+      flex: 1;      
+      text-align: center;      
+      margin-left: -24px; /* To offset back arrow width */      
+    }      
+      
+    .profile {      
+      padding: 20px 16px;      
+      display: flex;      
+      align-items: center;      
+      gap: 20px;      
+    }      
+      
+    .dp {      
+      width: 90px;      
+      height: 90px;      
+      border-radius: 50%;      
+      background: blueviolet;      
+      color: white;      
+      font-size: 32px;      
+      display: flex;      
+      align-items: center;      
+      justify-content: center;      
+      overflow: hidden;      
+      text-transform: uppercase;      
+      flex-shrink: 0;      
+    }      
+      
+    .dp img {      
+      width: 100%;      
+      height: 100%;      
+      object-fit: cover;      
+    }      
+      
+    .info {      
+      flex: 1;      
+    }      
+      
+    .info h2 {      
+      margin: 0;      
+      font-size: 22px;      
+    }      
+      
+    .info p {      
+      margin: 4px 0 0 0;      
+      color: #777;      
+      font-size: 16px;      
+    }      
+      
+    /* Stats */      
+    .stats {      
+      display: flex;      
+      justify-content: space-around;      
+      margin: 20px 16px 10px;      
+      text-align: center;      
+      cursor: default;      
+      user-select: none;      
+    }      
+      
+    .stats div {      
+      font-size: 15px;      
+      flex: 1;      
+    }      
+      
+    .stats b {      
+      display: block;      
+      font-size: 20px;      
+      font-weight: 600;      
+      color: blueviolet;      
+    }      
+      
+    /* Action buttons */      
+    .actions {      
+      display: flex;      
+      justify-content: space-around;      
+      margin: 0 16px 20px;      
+      gap: 15px;      
+    }      
+      
+    .actions button {      
+      flex: 1;      
+      padding: 10px 0;      
+      font-size: 16px;      
+      border-radius: 30px;      
+      border: 1.5px solid blueviolet;      
+      background: white;      
+      color: blueviolet;      
+      cursor: pointer;      
+      transition: background-color 0.3s, color 0.3s;      
+      display: flex;      
+      align-items: center;      
+      justify-content: center;      
+      gap: 8px;      
+    }      
+      
+    .actions button:hover {      
+      background: blueviolet;      
+      color: white;      
+    }      
+      
+    /* Tabs */      
+    .tabs {      
+      display: flex;      
+      justify-content: space-around;      
+      border-bottom: 2px solid #eee;      
+      margin: 0 16px 10px;      
+    }      
+      
+    .tabs button {      
+      flex: 1;      
+      padding: 12px 0;      
+      background: none;      
+      border: none;      
+      font-size: 16px;      
+      font-weight: 600;      
+      color: #555;      
+      cursor: pointer;      
+      border-bottom: 3px solid transparent;      
+      transition: color 0.3s, border-bottom-color 0.3s;      
+    }      
+      
+    .tabs button.active {      
+      color: blueviolet;      
+      border-bottom-color: blueviolet;      
+    }      
+      
+    /* Gallery */      
+    .gallery {      
+      display: grid;      
+      grid-template-columns: repeat(3, 1fr);      
+      gap: 3px;      
+      margin: 0 16px 30px;      
+    }      
+      
+    .gallery img,      
+    .gallery video {      
+      width: 100%;      
+      aspect-ratio: 1 / 1;      
+      object-fit: cover;      
+      border-radius: 8px;      
+      cursor: pointer;      
+      transition: transform 0.2s ease;      
+    }      
+      
+    .gallery img:hover,      
+    .gallery video:hover {      
+      transform: scale(1.05);      
+    }      
+      
+    /* Responsive */      
+    @media (max-width: 600px) {      
+      .profile {      
+        flex-direction: column;      
+        align-items: center;      
+      }      
+      .info {      
+        text-align: center;      
+      }      
+      .stats {      
+        flex-direction: column;      
+        gap: 10px;      
+      }      
+      .stats div {      
+        cursor: default;      
+      }      
+      .actions {      
+        flex-direction: column;      
+      }      
+      .actions button {      
+        width: 100%;      
+      }      
+      .gallery {      
+        grid-template-columns: repeat(2, 1fr);      
+      }      
+    }      
+  </style>      
+</head>      
+<body>      
+  <!-- Topbar -->      
+  <div class="topbar">      
+    <i class="fas fa-arrow-left" onclick="history.back()"></i>      
+    <div class="topbar-title" id="profileUsername">@username</div>      
+    <i class="fas fa-ellipsis-v"></i>      
+  </div>      
+      
+  <!-- Profile Section -->      
+  <div class="profile">      
+    <div class="dp" id="dpBox"></div>      
+    <div class="info">      
+      <h2 id="profileName">Name</h2>      
+      <p id="profileUser">@username</p>      
+    </div>      
+  </div>      
+      
+  <!-- Stats -->      
+  <div class="stats">      
+    <div><b id="postCount">0</b>Posts</div>      
+    <div onclick="goTo('follower.html')"><b id="followerCount">0</b>Followers</div>      
+    <div onclick="goTo('following.html')"><b id="followingCount">0</b>Following</div>      
+  </div>      
+      
+  <!-- Action Buttons -->      
+  <div class="actions">      
+    <button id="shareBtn"><i class="fas fa-share-alt"></i> Share</button>      
+    <button id="messageBtn"><i class="fas fa-comment-dots"></i> Message</button>      
+    <button id="moreBtn"><i class="fas fa-ellipsis-h"></i> More</button>      
+  </div>      
+      
+  <!-- Tabs -->      
+  <div class="tabs">      
+    <button class="tab-btn active" data-type="all">All</button>      
+    <button class="tab-btn" data-type="video">Video</button>      
+    <button class="tab-btn" data-type="image">Post</button>      
+    <button class="tab-btn" data-type="blog">Blog</button>      
+  </div>      
+      
+  <!-- Gallery -->      
+  <div class="gallery" id="galleryBox">      
+    <!-- Posts will appear here -->      
+  </div>      
+      
+  <!-- Firebase -->      
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>      
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>      
+      
+  <script>      
+    const firebaseConfig = {      
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",      
+      authDomain: "chatgram-app-a.firebaseapp.com",      
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",      
+      projectId: "chatgram-app-a",      
+      storageBucket: "chatgram-app-a.appspot.com",      
+      messagingSenderId: "1067753841739",      
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"      
+    };      
+    firebase.initializeApp(firebaseConfig);      
+    const db = firebase.database();      
+      
+    const username = localStorage.getItem("profile_user");      
+    if (!username) location.href = "contacts.html";      
+      
+    // Elements      
+    const dpBox = document.getElementById("dpBox");      
+    const profileName = document.getElementById("profileName");      
+    const profileUsername = document.getElementById("profileUsername");      
+    const profileUser = document.getElementById("profileUser");      
+    const postCountEl = document.getElementById("postCount");      
+    const followerCountEl = document.getElementById("followerCount");      
+    const followingCountEl = document.getElementById("followingCount");      
+    const galleryBox = document.getElementById("galleryBox");      
+    const tabButtons = document.querySelectorAll(".tab-btn");      
+      
+    let allPosts = [];      
+      
+    // Load profile info      
+    db.ref("users/" + username).once("value").then((snap) => {      
+      const data = snap.val() || {};      
+      profileName.innerText = data.name || username;      
+      profileUsername.innerText = "@" + username;      
+      profileUser.innerText = "@" + username;      
+      
+      if (data.dp) {      
+        dpBox.innerHTML = `<img src="${data.dp}" alt="DP">`;      
+      } else {      
+        dpBox.innerText = (data.name || username).charAt(0).toUpperCase();      
+      }      
+    });      
+      
+    // Load followers / following count      
+    db.ref("followers").once("value").then((snap) => {      
+      let followers = 0;      
+      let following = 0;      
+      snap.forEach((userFollowersSnap) => {      
+        if (userFollowersSnap.child(username).exists()) followers++;      
+        if (userFollowersSnap.key === username) following = userFollowersSnap.numChildren();      
+      });      
+      followerCountEl.innerText = followers;      
+      followingCountEl.innerText = following;      
+    });      
+      
+    // Load posts and update post count      
+    function loadPosts(type = "all") {      
+      galleryBox.innerHTML = `<p style="text-align:center; grid-column:1/4; padding: 20px; color:#666">Loading posts...</p>`;      
+      db.ref("posts").once("value").then((snap) => {      
+        const posts = snap.val() || {};      
+        allPosts = Object.values(posts).filter(p => p.username === username);      
+        postCountEl.innerText = allPosts.length;      
+      
+        let filtered = allPosts;      
+        if (type !== "all") {      
+          filtered = allPosts.filter(p => p.type === type);      
+        }      
+      
+        if (filtered.length === 0) {      
+          galleryBox.innerHTML = `<p style="text-align:center; grid-column:1/4; padding: 20px; color:#666">No ${type === 'all' ? '' : type} posts yet</p>`;      
+          return;      
+        }      
+      
+        let html = "";      
+        filtered.forEach(post => {      
+          if (post.type === "image" || post.type === "post") {      
+            html += `<img src="${post.content}" alt="Post" loading="lazy" />`;      
+          } else if (post.type === "video" || post.type === "reel") {      
+            html += `<video src="${post.content}" muted autoplay loop playsinline></video>`;      
+          } else if (post.type === "blog") {      
+            // Show blog post snippet box      
+            html += `      
+              <div style="padding:10px; border:1px solid #ddd; border-radius:8px; background:#fafafa; grid-column: span 3; cursor:pointer;"      
+                onclick="openBlogPost('${post.id}')">      
+                <h3 style="margin:0 0 6px; color:blueviolet;">${post.title || "Blog Post"}</h3>      
+                <p style="margin:0; color:#555; font-size:14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">      
+                  ${post.content.slice(0, 120)}...      
+                </p>      
+              </div>      
+            `;      
+          }      
+        });      
+      
+        galleryBox.innerHTML = html;      
+      });      
+    }      
+      
+    // Initial load all posts      
+    loadPosts();      
+      
+    // Tabs click handler      
+    tabButtons.forEach((btn) => {      
+      btn.addEventListener("click", () => {      
+        tabButtons.forEach((b) => b.classList.remove("active"));      
+        btn.classList.add("active");      
+        loadPosts(btn.dataset.type);      
+      });      
+    });      
+      
+    // Open blog post detail      
+    function openBlogPost(postId) {      
+      // You can implement navigation or popup here      
+      alert("Open blog post with ID: " + postId);      
+    }      
+      
+    // Action buttons handlers      
+    document.getElementById("shareBtn").onclick = () => {      
+      if (navigator.share) {      
+        navigator.share({      
+          title: profileName.innerText,      
+          url: location.href,      
+        }).catch(console.error);      
+      } else {      
+        alert("Share is not supported on your browser");      
+      }      
+    };      
+      
+    document.getElementById("messageBtn").onclick = () => {      
+      localStorage.setItem("chat_with", username);      
+      localStorage.setItem("chat_with_name", profileName.innerText);      
+      location.href = "chat.html";      
+    };      
+      
+    document.getElementById("moreBtn").onclick = () => {      
+      alert("More options will be added soon.");      
+    };      
+      
+    // Utility navigation      
+    function goTo(page) {      
+      location.href = page;      
+    }      
+  </script>      
+</body>      
+</html>

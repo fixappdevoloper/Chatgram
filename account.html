@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatgram - Account</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+
+    .topbar {
+      background: #6200ea;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 18px;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .profile {
+      padding: 20px 16px 10px;
+      background: white;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-radius: 16px;
+      margin: 16px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    }
+
+    .dp {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #6200ea;
+      color: white;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+    }
+
+    .dp img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .dp-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    .dp-emoji {
+      font-size: 55px;
+      line-height: 1;
+    }
+
+    .dp-text {
+      font-size: 12px;
+      color: white;
+      text-shadow: 1px 1px 3px black;
+    }
+
+    .info h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .info p {
+      margin: 4px 0 0;
+      color: gray;
+      font-size: 14px;
+    }
+
+    .counts {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 16px;
+      margin: 0 16px;
+      background: white;
+      border-radius: 12px;
+      margin-top: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .count-item {
+      text-align: center;
+      flex: 1;
+    }
+
+    .count-item b {
+      font-size: 18px;
+      color: #6200ea;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      margin: 12px 16px;
+    }
+
+    .actions button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 24px;
+      font-size: 14px;
+      margin: 0 4px;
+      cursor: pointer;
+    }
+
+    .edit-btn {
+      background: #6200ea;
+      color: white;
+    }
+
+    .share-btn {
+      background: #e0e0e0;
+      color: black;
+    }
+
+    .tabs {
+      display: flex;
+      margin: 10px 16px;
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 12px 0;
+      font-weight: bold;
+      color: #888;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      background: #6200ea;
+      color: white;
+    }
+
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      padding: 10px;
+    }
+
+    .post-item {
+      width: 100%;
+      aspect-ratio: 1/1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .post-item img, .post-item video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .type-label {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      font-size: 10px;
+      padding: 2px 5px;
+      border-radius: 5px;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    }
+
+    .bottom-nav i {
+      font-size: 22px;
+      color: red;
+    }
+
+    .bottom-nav i.active {
+      color: #6200ea;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <i class="fas fa-arrow-left" onclick="history.back()"></i>
+    <span id="topUsername">@username</span>
+  </div>
+
+  <div class="profile">
+    <div class="dp" id="profilePic">
+      <div class="dp-overlay">
+        <div class="dp-emoji" id="dpEmoji"></div>
+        <div class="dp-text" id="dpText"></div>
+      </div>
+    </div>
+    <div class="info">
+      <h2 id="fullName">Your Name</h2>
+      <p id="username">@username</p>
+    </div>
+  </div>
+
+  <div class="counts">
+    <div class="count-item"><b id="postCount">0</b><br>Posts</div>
+    <div class="count-item" onclick="location.href='follower.html'"><b id="followersCount">0</b><br>Followers</div>
+    <div class="count-item" onclick="location.href='following.html'"><b id="followingCount">0</b><br>Following</div>
+  </div>
+
+  <div class="actions">
+    <button class="edit-btn" onclick="location.href='profile-settings.html'">Edit</button>
+    <button class="share-btn" onclick="navigator.share ? navigator.share({ title: 'Chatgram', text: 'Check out my Chatgram profile!' }) : alert('Not supported')">Share</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab-btn active" onclick="filterPosts('image', this)">Images</div>
+    <div class="tab-btn" onclick="filterPosts('video', this)">Videos</div>
+    <div class="tab-btn" onclick="filterPosts('blog', this)">Blogs</div>
+  </div>
+
+  <div class="posts-grid" id="postGrid"></div>
+
+  <div class="bottom-nav">
+    <i class="fas fa-home" onclick="location.href='contacts.html'"></i>
+    <i class="fas fa-video" onclick="location.href='video.html'"></i>
+    <i class="fas fa-plus-circle" onclick="location.href='post.html'"></i>
+    <i class="fas fa-user active" onclick="location.href='account.html'"></i>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const username = localStorage.getItem("chat_username");
+    if (!username) location.href = "login.html";
+
+    const nameEl = document.getElementById("fullName");
+    const unameEl = document.getElementById("username");
+    const topUname = document.getElementById("topUsername");
+    const dpEl = document.getElementById("profilePic");
+    const postGrid = document.getElementById("postGrid");
+    const dpEmoji = document.getElementById("dpEmoji");
+    const dpText = document.getElementById("dpText");
+
+    let allPosts = [];
+
+    db.ref("users/" + username).once("value", snap => {
+      const user = snap.val();
+      nameEl.innerText = user.name || "Name";
+      unameEl.innerText = "@" + username;
+      topUname.innerText = "@" + username;
+
+      dpEmoji.innerText = user.dpEmoji || "";
+      dpText.innerText = user.dpText || "";
+
+      if (user.dp) {
+        dpEl.innerHTML = `<img src="${user.dp}" />` + dpEl.innerHTML;
+      } else {
+        dpEl.innerHTML = `<span style="font-size:32px;">${user.name ? user.name[0].toUpperCase() : username[0].toUpperCase()}</span>` + dpEl.innerHTML;
+      }
+    });
+
+    db.ref("followers").on("value", snap => {
+      let followers = 0, following = 0;
+      snap.forEach(child => {
+        if (child.hasChild(username)) followers++;
+        if (child.key === username) following = Object.keys(child.val()).length;
+      });
+      document.getElementById("followersCount").innerText = followers;
+      document.getElementById("followingCount").innerText = following;
+    });
+
+    db.ref("posts").orderByChild("username").equalTo(username).on("value", snap => {
+      allPosts = [];
+      snap.forEach(postSnap => {
+        const post = postSnap.val();
+        allPosts.push(post);
+      });
+      document.getElementById("postCount").innerText = allPosts.length;
+      filterPosts('image', document.querySelector('.tab-btn.active'));
+    });
+
+    function filterPosts(type, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      postGrid.innerHTML = '';
+      allPosts.filter(p => p.type === type).forEach(post => {
+        const div = document.createElement("div");
+        div.className = "post-item";
+        if (type === 'image') {
+          div.innerHTML = `<img src="${post.content}"><div class="type-label">Image</div>`;
+        } else if (type === 'video') {
+          div.innerHTML = `<video src="${post.content}" muted></video><div class="type-label">Video</div>`;
+        } else if (type === 'blog') {
+          div.innerHTML = `<div style="padding:10px;font-size:13px;">📝 ${post.content.slice(0, 50)}...</div><div class="type-label">Blog</div>`;
+        }
+        postGrid.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>

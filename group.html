@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🌐 World Group Chat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-database-compat.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #e5e5f7;
+      background: linear-gradient(to top, #ffffff, #f0f3ff);
+      padding-bottom: 70px;
+    }
+
+    .topbar {
+      background: #6200ea;
+      color: white;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .topbar i {
+      font-size: 20px;
+      margin-right: 12px;
+      cursor: pointer;
+    }
+
+    .topbar span {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .chat-box {
+      padding: 10px 12px;
+    }
+
+    .msg-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      word-wrap: break-word;
+      font-size: 15px;
+      position: relative;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .me {
+      background: #dcf8c6;
+      align-self: flex-end;
+      border-bottom-right-radius: 0;
+    }
+
+    .them {
+      background: #ffffff;
+      align-self: flex-start;
+      border-bottom-left-radius: 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .msg b {
+      font-size: 13px;
+      color: #333;
+    }
+
+    .timestamp {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .input-box {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+
+    .input-box input {
+      flex: 1;
+      padding: 10px 16px;
+      font-size: 15px;
+      border-radius: 24px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .input-box button {
+      margin-left: 10px;
+      background: #6200ea;
+      border: none;
+      color: white;
+      font-weight: bold;
+      padding: 10px 16px;
+      border-radius: 24px;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: background 0.3s;
+    }
+
+    .input-box button:hover {
+      background: #4a00b0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <i class="fas fa-arrow-left" onclick="history.back()"></i>
+    <span>World Group Chat</span>
+  </div>
+
+  <!-- Chat Body -->
+  <div class="chat-box">
+    <div class="msg-list" id="messages"></div>
+  </div>
+
+  <!-- Message Input -->
+  <div class="input-box">
+    <input id="msgInput" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <!-- Firebase Logic -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce",
+      measurementId: "G-54MCZL1TWP"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const msgList = document.getElementById("messages");
+    const msgInput = document.getElementById("msgInput");
+
+    const myName = localStorage.getItem("chatgram_name") || prompt("Enter your name:");
+    localStorage.setItem("chatgram_name", myName);
+
+    const groupRef = db.ref("world_group");
+
+    groupRef.on("child_added", snapshot => {
+      const data = snapshot.val();
+      const msg = document.createElement("div");
+      msg.className = "msg " + (data.sender === myName ? "me" : "them");
+      msg.innerHTML = `
+        <b>${data.sender}</b><br>
+        ${escapeHtml(data.text)}
+        <div class="timestamp">${new Date(data.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</div>
+      `;
+      msgList.appendChild(msg);
+      msgList.scrollTop = msgList.scrollHeight;
+    });
+
+    function sendMessage() {
+      const text = msgInput.value.trim();
+      if (text) {
+        const msgObj = {
+          sender: myName,
+          text: text,
+          time: Date.now()
+        };
+        groupRef.push(msgObj);
+        msgInput.value = "";
+      }
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+  </script>
+
+</body>
+</html>

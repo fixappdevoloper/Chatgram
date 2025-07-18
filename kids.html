@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Videogram 🎬</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      color: #000;
+    }
+
+    header {
+      background: #ff0000;
+      color: white;
+      padding: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .back-btn {
+      margin-right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .video-card {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .video-card:hover {
+      transform: scale(1.02);
+    }
+
+    .video-card img {
+      width: 100%;
+      display: block;
+    }
+
+    .video-details {
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .video-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ccc;
+      flex-shrink: 0;
+    }
+
+    .video-meta {
+      text-align: left;
+    }
+
+    .video-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .video-channel, .video-views {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .age-check {
+      background: #fff8dc;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    input[type=number] {
+      padding: 8px;
+      width: 80px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      margin-left: 10px;
+      border: none;
+      background: #ff0000;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <i class="bi bi-arrow-left-circle-fill back-btn" onclick="window.location.href='video.html'"></i>
+  Videogram
+</header>
+
+<div class="age-check" id="ageCheck">
+  <h3>Parental Check</h3>
+  <p>Enter your age to continue:</p>
+  <input type="number" id="ageInput" min="1" max="99" />
+  <button onclick="checkAge()"><i class="bi bi-check-circle-fill"></i></button>
+</div>
+
+<div id="mainContent" style="display:none;">
+  <div class="video-grid" id="gallery"></div>
+</div>
+
+<script>
+  const videos = [
+    { id: "1nFHZX50YOY", title: "ABC Songs for Kids", channel: "Kids World", views: "1.2M views" },
+    { id: "ypiwpw1RrJM", title: "Numbers Song", channel: "Nursery Fun", views: "850K views" },
+    { id: "v69kJLHKygk", title: "Animal Sounds", channel: "Kids Zoo", views: "940K views" },
+    { id: "siUvNRALTho", title: "Colors & Shapes", channel: "Learning Land", views: "720K views" },
+    { id: "YxxqI8yv7BM", title: "Days of the Week", channel: "Smart Kids", views: "1.1M views" },
+    { id: "f_pbUB1r3lM", title: "Twinkle Twinkle", channel: "Rhymes Time", views: "2.3M views" },
+    { id: "XbIV-KHDBCY", title: "Alphabet Train", channel: "Toddler Tunes", views: "640K views" }
+  ];
+
+  function shuffleArray(array) {
+    // Fisher–Yates shuffle algorithm
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  }
+
+  function checkAge() {
+    const age = parseInt(document.getElementById("ageInput").value);
+    if (age >= 3) {
+      localStorage.setItem("userAge", age);
+      document.getElementById("ageCheck").style.display = "none";
+      document.getElementById("mainContent").style.display = "block";
+      loadGallery();
+    } else {
+      alert("Sorry! You must be 3+ to use Videogram.");
+    }
+  }
+
+  function loadGallery() {
+    const gallery = document.getElementById("gallery");
+    gallery.innerHTML = '';
+    const shuffled = shuffleArray([...videos]); // Copy then shuffle
+    shuffled.forEach((vid) => {
+      const card = document.createElement("div");
+      card.className = "video-card";
+      card.onclick = () => {
+        window.location.href = `play-video.html?id=${vid.id}`;
+      };
+      card.innerHTML = `
+        <img src="https://img.youtube.com/vi/${vid.id}/0.jpg" alt="${vid.title}">
+        <div class="video-details">
+          <div class="video-avatar"></div>
+          <div class="video-meta">
+            <div class="video-title">${vid.title}</div>
+            <div class="video-channel">${vid.channel}</div>
+            <div class="video-views">${vid.views}</div>
+          </div>
+        </div>
+      `;
+      gallery.appendChild(card);
+    });
+  }
+
+  window.onload = () => {
+    const savedAge = localStorage.getItem("userAge");
+    if (savedAge && parseInt(savedAge) >= 3) {
+      document.getElementById("ageCheck").style.display = "none";
+      document.getElementById("mainContent").style.display = "block";
+      loadGallery();
+    }
+  };
+</script>
+
+</body>
+</html>
