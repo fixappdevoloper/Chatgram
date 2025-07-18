@@ -4,129 +4,63 @@
   <title>Chatgram - Contacts</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      background: #fff;
-    }
+    body { font-family: sans-serif; margin: 0; background: #fff; }
 
     .topbar {
-      background: blueviolet;
-      padding: 10px 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background: blueviolet; padding: 10px 15px;
+      display: flex; justify-content: space-between; align-items: center;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
+    .topbar span { font-size: 22px; font-weight: bold; color: white; }
+    .icons { display: flex; align-items: center; gap: 15px; }
+    .icons i { font-size: 20px; cursor: pointer; color: white; }
+    .dropdown { position: relative; }
+    .dropdown-menu {
+      position: absolute; top: 30px; right: 0; background: white;
+      border-radius: 6px; overflow: hidden; display: none;
+      flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10;
+    }
+    .dropdown-menu.show { display: flex; }
+    .dropdown-menu button {
+      padding: 10px; background: white; border: none;
+      font-size: 16px; text-align: left; cursor: pointer;
+    }
+    .dropdown-menu button:hover { background: #f0f0f0; }
 
-    .topbar span {
-      font-size: 22px;
-      font-weight: bold;
-      color: white;
+    .user {
+      background: white; padding: 10px; margin: 8px 10px;
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+      
     }
 
-    .icons {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
+    .left { display: flex; align-items: center; gap: 12px; flex: 1; }
 
-    .icons i {
-      font-size: 20px;
-      cursor: pointer;
-      color: white;
-    }
-
-    .dropdown {
+    .dp {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: blueviolet; color: white; font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0; cursor: pointer;
       position: relative;
     }
 
-    .dropdown-menu {
-      position: absolute;
-      top: 30px;
-      right: 0;
-      background: white;
-      border-radius: 6px;
-      overflow: hidden;
-      display: none;
-      flex-direction: column;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      z-index: 10;
-    }
-
-    .dropdown-menu.show { display: flex; }
-
-    .dropdown-menu button {
-      padding: 10px;
-      background: white;
-      border: none;
-      font-size: 16px;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .dropdown-menu button:hover {
-      background: #f0f0f0;
-    }
-
-    .user {
-      background: white;
-      padding: 10px;
-      margin: 8px 10px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-    }
-
-    .dp {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: blueviolet;
-      color: white;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      flex-shrink: 0;
-      cursor: pointer;
-    }
-
-    .dp img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .dp img { width: 100%; height: 100%; object-fit: cover; }
 
     .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: white;
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 0;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: white; display: flex; justify-content: space-around;
+      padding: 10px 0; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
     }
 
-    .bottom-nav i {
-      font-size: 22px;
-      color: red;
-    }
+    .bottom-nav i { font-size: 22px; color: red; }
+    .bottom-nav .active { color: blueviolet; }
 
-    .bottom-nav .active {
-      color: blueviolet;
+    .badge {
+      position: absolute; top: -5px; right: -5px;
+      background: green; color: white;
+      font-size: 12px; padding: 2px 6px;
+      border-radius: 12px; min-width: 20px;
+      text-align: center;
     }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -166,6 +100,7 @@
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
@@ -181,84 +116,150 @@
 
     const username = localStorage.getItem("chat_username");
     const userList = document.getElementById("userList");
-
     if (!username) location.href = "login.html";
 
-    // ✅ Set current user online
     db.ref("status/" + username).set({ typing: false });
     window.addEventListener("beforeunload", () => {
       db.ref("status/" + username).remove();
     });
 
-    db.ref("users").on("value", snap => {
-      userList.innerHTML = "<h3 style='padding:10px'>Chat Contacts:</h3>";
-      snap.forEach(user => {
+    async function loadUsers() {
+      const usersSnap = await db.ref("users").once("value");
+      const chatSnap = await db.ref("chats/" + username).once("value");
+
+      const chatUsers = new Set();
+      const messageCount = {};
+      if (chatSnap.exists()) {
+        Object.entries(chatSnap.val()).forEach(([uid, messages]) => {
+          chatUsers.add(uid);
+          messageCount[uid] = Object.keys(messages).length;
+        });
+      }
+
+      const followed = await db.ref("followers/" + username).once("value");
+      const followedUsers = followed.exists() ? Object.keys(followed.val()) : [];
+
+      const sortedUsers = [];
+
+      usersSnap.forEach(user => {
         const uname = user.key;
         const data = user.val();
+        if (uname === username) return;
 
-        if (uname !== username) {
-          db.ref("followers/" + username + "/" + uname).once("value", followSnap => {
-            if (followSnap.exists()) {
-              const div = document.createElement("div");
-              div.className = "user";
-
-              const left = document.createElement("div");
-              left.className = "left";
-
-              const dp = document.createElement("div");
-              dp.className = "dp";
-              dp.onclick = (e) => {
-                e.stopPropagation();
-                localStorage.setItem("profile_user", uname);
-                location.href = "users-profile.html";
-              };
-
-              if (data.dp) {
-                const img = document.createElement("img");
-                img.src = data.dp;
-                dp.appendChild(img);
-              } else {
-                dp.innerText = data.name ? data.name.charAt(0).toUpperCase() : uname.charAt(0).toUpperCase();
-              }
-
-              const info = document.createElement("div");
-              info.innerHTML = `
-                <b>${data.name}</b><br>
-                <small>@${uname}</small><br>
-                <span id="status-${uname}" style="font-size:12px; color:gray;">Loading...</span>
-              `;
-
-              left.appendChild(dp);
-              left.appendChild(info);
-              div.appendChild(left);
-
-              div.onclick = () => {
-                localStorage.setItem("chat_with", uname);
-                localStorage.setItem("chat_with_name", data.name);
-                location.href = "chat.html";
-              };
-
-              userList.appendChild(div);
-
-              // ✅ Real-time online/offline status
-              db.ref("status/" + uname).on("value", statusSnap => {
-                const status = statusSnap.val();
-                const statusEl = document.getElementById("status-" + uname);
-                if (statusEl) {
-                  if (status && status.typing !== undefined) {
-                    statusEl.innerText = "Online";
-                    statusEl.style.color = "green";
-                  } else {
-                    statusEl.innerText = "Offline";
-                    statusEl.style.color = "gray";
-                  }
-                }
-              });
-            }
-          });
-        }
+        const hasChat = chatUsers.has(uname);
+        const count = messageCount[uname] || 0;
+        sortedUsers.push({ uname, data, hasChat, count });
       });
-    });
+
+      // Sort: chats with most messages first
+      sortedUsers.sort((a, b) => b.count - a.count || b.hasChat - a.hasChat);
+
+      userList.innerHTML = "<h3 style='padding:10px;'>Chat Contacts:</h3>";
+
+      sortedUsers.forEach(({ uname, data, hasChat, count }) => {
+        const div = document.createElement("div");
+        div.className = "user";
+
+        const left = document.createElement("div");
+        left.className = "left";
+
+        const dp = document.createElement("div");
+        dp.className = "dp";
+        dp.onclick = (e) => {
+          e.stopPropagation();
+          localStorage.setItem("profile_user", uname);
+          location.href = "users-profile.html";
+        };
+
+        if (data.dp) {
+          const img = document.createElement("img");
+          img.src = data.dp;
+          dp.appendChild(img);
+        } else {
+          dp.innerText = data.name ? data.name.charAt(0).toUpperCase() : uname.charAt(0).toUpperCase();
+        }
+
+        // Message count badge
+        if (count > 0) {
+          const badge = document.createElement("div");
+          badge.className = "badge";
+          badge.innerText = count;
+          dp.appendChild(badge);
+        }
+
+        const info = document.createElement("div");
+        info.innerHTML = `
+          <b>${data.name}</b><br>
+          <small>@${uname}</small><br>
+          <span id="status-${uname}" style="font-size:12px; color:gray;">Loading...</span>
+        `;
+
+        left.appendChild(dp);
+        left.appendChild(info);
+        div.appendChild(left);
+
+        const right = document.createElement("div");
+        right.style.display = "flex";
+        right.style.flexDirection = "column";
+        right.style.alignItems = "flex-end";
+        right.style.gap = "5px";
+
+        if (followedUsers.includes(uname)) {
+          const msgBtn = document.createElement("button");
+          msgBtn.innerText = "Message";
+          msgBtn.style.padding = "5px 10px";
+          msgBtn.style.background = "blueviolet";
+          msgBtn.style.color = "white";
+          msgBtn.style.border = "none";
+          msgBtn.style.borderRadius = "6px";
+          msgBtn.style.cursor = "pointer";
+          msgBtn.onclick = (e) => {
+            e.stopPropagation();
+            localStorage.setItem("chat_with", uname);
+            localStorage.setItem("chat_with_name", data.name);
+            location.href = "chat.html";
+          };
+          right.appendChild(msgBtn);
+        } else {
+          const followBtn = document.createElement("button");
+          followBtn.innerText = "Follow";
+          followBtn.style.padding = "5px 10px";
+          followBtn.style.background = "green";
+          followBtn.style.color = "white";
+          followBtn.style.border = "none";
+          followBtn.style.borderRadius = "6px";
+          followBtn.style.cursor = "pointer";
+          followBtn.onclick = async (e) => {
+            e.stopPropagation();
+            await db.ref("followers/" + username + "/" + uname).set(true);
+            loadUsers();
+          };
+          right.appendChild(followBtn);
+        }
+
+        div.appendChild(right);
+        userList.appendChild(div);
+
+        db.ref("status/" + uname).on("value", statusSnap => {
+          const status = statusSnap.val();
+          const statusEl = document.getElementById("status-" + uname);
+          if (statusEl) {
+            if (status?.typing) {
+              statusEl.innerText = "Typing...";
+              statusEl.style.color = "blue";
+            } else if (status) {
+              statusEl.innerText = "Online";
+              statusEl.style.color = "green";
+            } else {
+              statusEl.innerText = "Offline";
+              statusEl.style.color = "gray";
+            }
+          }
+        });
+      });
+    }
+
+    loadUsers();
 
     function goTo(page) {
       location.href = page;
@@ -275,4 +276,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
