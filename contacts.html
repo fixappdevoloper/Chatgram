@@ -7,13 +7,20 @@
     body { font-family: sans-serif; margin: 0; background: #fff; }
 
     .topbar {
-      background: blueviolet; padding: 10px 15px;
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      background:#fff; 
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: centre;
     }
-    .topbar span { font-size: 22px; font-weight: bold; color: white; }
+    .topbar span {
+      font-size: 35px;
+      font-weight:bold;
+      color: black;
+      font-family: 'Pacifico', cursive;
+    }
     .icons { display: flex; align-items: center; gap: 15px; }
-    .icons i { font-size: 20px; cursor: pointer; color: white; }
+    .icons i { font-size: 20px; cursor: pointer; color: black; }
     .dropdown { position: relative; }
     .dropdown-menu {
       position: absolute; top: 30px; right: 0; background: white;
@@ -38,7 +45,7 @@
 
     .dp {
       width: 60px; height: 60px; border-radius: 50%;
-      background: blueviolet; color: white; font-size: 20px;
+      background: linear-gradient(to left, red, blueviolet); color: white; font-size: 20px;
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; flex-shrink: 0; cursor: pointer;
       position: relative;
@@ -76,7 +83,7 @@
       <div class="dropdown">
         <i class="fas fa-cog" onclick="toggleMenu(event)"></i>
         <div class="dropdown-menu" id="menu">
-          <button onclick="goTo('profile-settings.html')">Profile Settings</button>
+          <button onclick="goTo('edit.html')">Profile Settings</button>
           <button onclick="goTo('account.html')">Profile</button>
           <button onclick="goTo('settings.html')">Settings</button>
           <button onclick="goTo('info.html')">App Info</button>
@@ -87,7 +94,7 @@
   </div>
 
   <!-- Contact List -->
-  <div id="userList"><h3 style="padding:10px;">Chat Contacts:</h3></div>
+  <div id="userList"><h3 style="padding:10px;">World Members:</h3></div>
 
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
@@ -276,4 +283,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
