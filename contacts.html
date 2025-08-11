@@ -123,7 +123,7 @@
 
     const username = localStorage.getItem("chat_username");
     const userList = document.getElementById("userList");
-    if (!username) location.href = "login.html";
+    if (!username) location.href = "register.html";
 
     db.ref("status/" + username).set({ typing: false });
     window.addEventListener("beforeunload", () => {
