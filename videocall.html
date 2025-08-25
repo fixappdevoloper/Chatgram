@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chatgram - Video Call</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { margin:0; background:#fff; overflow:hidden; font-family:sans-serif; }
+    #remoteVideo { position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; background:#fff; }
+    #localVideo { position:fixed; bottom:20px; right:20px; width:120px; height:160px; border-radius:12px; background:#222; object-fit:cover; }
+    .controls {
+      position:fixed; bottom:30px; left:50%; transform:translateX(-50%);
+      display:flex; gap:20px;
+    }
+    button {
+      width:60px; height:60px; border:none; border-radius:50%; font-size:22px;
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      background:#999; color:white;
+    }
+    .end { background:red !important; }
+    #timer {
+      position:fixed; top:20px; left:50%; transform:translateX(-50%);
+      color:white; font-size:18px;
+    }
+
+    /* Overlay (DP + Name + Username) */
+    #overlay {
+      position:fixed;
+      top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      text-align:center;
+      color:#fff;
+      display:none;
+      animation:fadeIn 0.3s ease;
+    }
+    #overlay img, #overlay .avatar {
+      width:100px; height:100px;
+      border-radius:50%;
+      background:#566fff;
+      display:flex; align-items:center; justify-content:center;
+      font-size:36px; font-weight:bold;
+      margin:auto;
+    }
+    #overlay .name { font-size:20px; margin-top:10px; }
+    #overlay .uname { font-size:14px; color:#444fff; }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <video id="remoteVideo" autoplay playsinline></video>
+  <video id="localVideo" autoplay muted playsinline></video>
+
+  <div id="overlay">
+    <div id="avatarContainer"></div>
+    <div class="name" id="displayName"></div>
+    <div class="uname" id="displayUname"></div>
+  </div>
+
+  <div id="timer">00:00</div>
+
+  <div class="controls">
+    <button onclick="toggleMute()" id="muteBtn"><i class="fas fa-microphone"></i></button>
+    <button onclick="toggleCamera()" id="camBtn"><i class="fas fa-video"></i></button>
+    <button onclick="switchCamera()"><i class="fas fa-sync"></i></button>
+    <button onclick="toggleSpeaker()"><i class="fas fa-volume-up"></i></button>
+    <button class="end" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script>
+    const firebaseConfig = { 
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const username = localStorage.getItem("chat_username");
+    const callWith = localStorage.getItem("call_with");
+
+    const peer = new RTCPeerConnection();
+    const localVideo = document.getElementById("localVideo");
+    const remoteVideo = document.getElementById("remoteVideo");
+    let localStream;
+    let seconds = 0, timerInterval;
+    let usingFront = true;
+
+    // Dummy user info (aap backend ya Firebase se load kar sakte ho)
+    const userData = {
+      dp: localStorage.getItem(callWith+"_dp") || "", // DP ka link agar ho
+      name: localStorage.getItem(callWith+"_name") || callWith,
+      uname: "@"+callWith
+    };
+
+    async function getMedia(constraints){
+      localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      localVideo.srcObject = localStream;
+      localStream.getTracks().forEach(track=>peer.addTrack(track, localStream));
+    }
+
+    getMedia({video:{facingMode:"user"}, audio:true});
+    peer.ontrack = (e)=>{ remoteVideo.srcObject = e.streams[0]; };
+
+    const callRef = db.ref("webrtc/" + username + "_" + callWith);
+
+    peer.onicecandidate = (event)=>{
+      if(event.candidate){
+        callRef.child("candidates/" + username).push(JSON.stringify(event.candidate));
+      }
+    };
+
+    async function initCall(){
+      const offer = await peer.createOffer();
+      await peer.setLocalDescription(offer);
+      await callRef.child("offer").set(JSON.stringify(offer));
+      callRef.child("answer").on("value", async snap=>{
+        if(snap.exists()){
+          const answer = JSON.parse(snap.val());
+          await peer.setRemoteDescription(answer);
+          startTimer();
+        }
+      });
+      callRef.child("candidates/" + callWith).on("child_added", async s=>{
+        await peer.addIceCandidate(new RTCIceCandidate(JSON.parse(s.val())));
+      });
+    }
+    async function joinCall(){
+      callRef.child("offer").on("value", async snap=>{
+        if(snap.exists()){
+          const offer = JSON.parse(snap.val());
+          await peer.setRemoteDescription(offer);
+          const answer = await peer.createAnswer();
+          await peer.setLocalDescription(answer);
+          await callRef.child("answer").set(JSON.stringify(answer));
+          startTimer();
+        }
+      });
+      callRef.child("candidates/" + callWith).on("child_added", async s=>{
+        await peer.addIceCandidate(new RTCIceCandidate(JSON.parse(s.val())));
+      });
+    }
+    if(username < callWith){ initCall(); } else { joinCall(); }
+
+    // --------- Extra Features ----------
+    function toggleMute(){
+      const track = localStream.getAudioTracks()[0];
+      track.enabled = !track.enabled;
+      document.getElementById("muteBtn").innerHTML = track.enabled ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>';
+    }
+    function toggleCamera(){
+      const track = localStream.getVideoTracks()[0];
+      track.enabled = !track.enabled;
+      document.getElementById("camBtn").innerHTML = track.enabled ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash"></i>';
+    }
+    async function switchCamera(){
+      usingFront = !usingFront;
+      if(localStream){ localStream.getTracks().forEach(t=>t.stop()); }
+      const constraints = {video:{facingMode: usingFront ? "user" : "environment"}, audio:true};
+      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+      const videoTrack = newStream.getVideoTracks()[0];
+      const sender = peer.getSenders().find(s => s.track.kind === "video");
+      sender.replaceTrack(videoTrack);
+      localStream = newStream;
+      localVideo.srcObject = localStream;
+    }
+    function toggleSpeaker(){
+      alert("Speaker toggle (browser support पर depend करता है)");
+    }
+    function endCall(){
+      callRef.remove();
+      if(localStream) localStream.getTracks().forEach(t=>t.stop());
+      clearInterval(timerInterval);
+      location.href = "contacts.html";
+    }
+    function startTimer(){
+      timerInterval = setInterval(()=>{
+        seconds++;
+        const m = String(Math.floor(seconds/60)).padStart(2,"0");
+        const s = String(seconds%60).padStart(2,"0");
+        document.getElementById("timer").innerText = `${m}:${s}`;
+      },1000);
+    }
+
+    // ---------- Double tap overlay ----------
+    let lastTap = 0;
+    document.body.addEventListener("click", ()=>{
+      const now = Date.now();
+      if(now - lastTap < 400){ // double tap
+        showOverlay();
+      }
+      lastTap = now;
+    });
+
+    function showOverlay(){
+      const overlay = document.getElementById("overlay");
+      const avatarContainer = document.getElementById("avatarContainer");
+      document.getElementById("displayName").innerText = userData.name;
+      document.getElementById("displayUname").innerText = userData.uname;
+
+      if(userData.dp){
+        avatarContainer.innerHTML = `<img src="${userData.dp}" alt="dp">`;
+      } else {
+        avatarContainer.innerHTML = `<div class="avatar">${userData.name.charAt(0).toUpperCase()}</div>`;
+      }
+
+      overlay.style.display = "block";
+      setTimeout(()=>{ overlay.style.display = "none"; }, 3000);
+    }
+  </script>
+</body>
+</html>
