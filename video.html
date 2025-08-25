@@ -1,112 +1,203 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Videos - Chatgram</title>
+  <title>Chatgram - Calls</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      background: #f9f9f9;
-      padding-bottom: 60px;
-    }
+    body { font-family: sans-serif; margin: 0; background: #fff; }
 
     .topbar {
-      background: blueviolet;
-      color: white;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      background:#fff;   
+      padding: 10px 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom:1px solid #ddd;
+    }
+    .topbar span {
+      font-size: 35px; font-weight:bold; color: #222;
+      font-family: 'Pacifico', cursive;
+    }
+    .icons { display: flex; align-items: center; gap: 15px; }
+    .icons i { font-size: 20px; cursor: pointer; color: black; }
+
+    .user {
+      background: white; padding: 10px; margin: 8px 10px;
+      border-radius: 8px; display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.08);
+    }
+    .left { display: flex; align-items: center; gap: 12px; flex: 1; }
+
+    .dp {
+      width: 55px; height: 55px; border-radius: 50%;
+      background: linear-gradient(to left, red, blueviolet);
+      color: white; font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; flex-shrink: 0; cursor: pointer;
+    }
+    .dp img { width: 100%; height: 100%; object-fit: cover; }
+
+    .right { display: flex; gap: 8px; }
+    .right button {
+      padding: 6px 10px; border: none; border-radius: 6px;
+      color: white; cursor: pointer; font-size:14px;
+    }
+    .voice { background: green; }
+    .video { background: blueviolet; }
+    .follow-btn { background: gray; }
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%;
+      background: white; display: flex; justify-content: space-around;
+      padding: 10px 0; box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+    }
+    .bottom-nav i { font-size: 22px; color: red; }
+    .bottom-nav .active { color: blueviolet; }
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <span>Chatgram</span>
+    <div class="icons">
+      <i class="fas fa-search" onclick="goTo('search.html')"></i>
+      <i class="fas fa-phone"></i>
+    </div>
+  </div>
+
+  <!-- Call List -->
+  <div id="callList"><h3 style="padding:10px;">Your Call Contacts:</h3></div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <i class="fas fa-home" onclick="goTo('contacts.html')"></i>
+    <i class="fas fa-phone active" onclick="goTo('call.html')"></i>
+    <i class="fas fa-user" onclick="goTo('account.html')"></i>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const username = localStorage.getItem("chat_username");
+    const callList = document.getElementById("callList");
+    if (!username) location.href = "register.html";
+
+    async function loadUsers() {
+      const usersSnap = await db.ref("users").once("value");
+      const followedSnap = await db.ref("followers/" + username).once("value");
+      const followedUsers = followedSnap.exists() ? Object.keys(followedSnap.val()) : [];
+
+      callList.innerHTML = "<h3 style='padding:10px;'>Your Call Contacts:</h3>";
+
+      usersSnap.forEach(user => {
+        const uname = user.key;
+        const data = user.val();
+        if (uname === username) return;
+
+        const div = document.createElement("div");
+        div.className = "user";
+
+        const left = document.createElement("div");
+        left.className = "left";
+
+        const dp = document.createElement("div");
+        dp.className = "dp";
+        if (data.dp) {
+          const img = document.createElement("img");
+          img.src = data.dp;
+          dp.appendChild(img);
+        } else {
+          dp.innerText = data.name ? data.name.charAt(0).toUpperCase() : uname.charAt(0).toUpperCase();
+        }
+
+        const info = document.createElement("div");
+        info.innerHTML = `<b>${data.name || uname}</b><br><small>@${uname}</small>`;
+
+        left.appendChild(dp);
+        left.appendChild(info);
+
+        const right = document.createElement("div");
+        right.className = "right";
+
+        if (followedUsers.includes(uname)) {
+          addCallButtons(right, uname, data.name);
+        } else {
+          const followBtn = document.createElement("button");
+          followBtn.innerText = "Follow";
+          followBtn.className = "follow-btn";
+          followBtn.onclick = async () => {
+            await db.ref("followers/" + username + "/" + uname).set(true);
+            followBtn.remove();
+            addCallButtons(right, uname, data.name);
+          };
+          right.appendChild(followBtn);
+        }
+
+        div.appendChild(left);
+        div.appendChild(right);
+        callList.appendChild(div);
+      });
     }
 
-    .topbar-title {
-      font-size: 20px;
-      font-weight: bold;
+    function addCallButtons(container, uname, name) {
+      const voiceBtn = document.createElement("button");
+      voiceBtn.innerText = "Voice";
+      voiceBtn.className = "voice";
+      voiceBtn.onclick = () => startCall(uname, name, "voice");
+
+      const videoBtn = document.createElement("button");
+      videoBtn.innerText = "Video";
+      videoBtn.className = "video";
+      videoBtn.onclick = () => startCall(uname, name, "video");
+
+      container.appendChild(voiceBtn);
+      container.appendChild(videoBtn);
     }
 
-    .open-btn {
-      background: white;
-      color: blueviolet;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 13px;
-      cursor: pointer;
+    function startCall(toUser, toName, type) {
+      db.ref("calls/" + toUser).set({
+        from: username,
+        name: localStorage.getItem("chat_with_name") || username,
+        type: type
+      });
+      localStorage.setItem("call_with", toUser);
+      location.href = type === "voice" ? "voicecall.html" : "videocall.html";
     }
 
-    .tabs {
-      display: flex;
-      justify-content: space-around;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
-    }
+    // Incoming call listener
+    db.ref("calls/" + username).on("value", snap => {
+      if (snap.exists()) {
+        const call = snap.val();
+        if (confirm("📞 Incoming " + call.type + " call from " + call.name + ". Accept?")) {
+          localStorage.setItem("call_with", call.from);
+          db.ref("calls/" + username).remove();
+          location.href = call.type === "voice" ? "voicecall.html" : "videocall.html";
+        } else {
+          db.ref("calls/" + username).remove();
+        }
+      }
+    });
 
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 10px 0;
-      font-weight: bold;
-      cursor: pointer;
-      color: #666;
-    }
-
-    .tab.active {
-      color: #ff0000;
-      border-bottom: 2px solid #ff0000;
-    }
-
-    .video-list {
-      padding: 10px;
-    }
-
-    .video-card {
-      background: white;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-
-    .video-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-    }
-
-    .video-header .user {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .user img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-    }
-
-    .user-name {
-      font-weight: bold;
-    }
-
-    .follow-btn {
-      background: #ff0066;
-      color: white;
-      border: none;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .video-thumb {
-      width: 100%;
-      max-height: 300px;
-      object-fit: cover;
-    }
+    loadUsers();
+    function goTo(page) { location.href = page; }
+  </script>
+</body>
+  </html>    }
 
     .video-info {
       padding: 10px;
