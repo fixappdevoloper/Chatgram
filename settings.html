@@ -8,111 +8,100 @@
     :root {
       --bg: #ffffff;
       --text: #000000;
-      --card: #f2f2f2;
+      --card: #f9f9f9;
     }
-
     body.dark {
       --bg: #121212;
       --text: #ffffff;
       --card: #1e1e1e;
     }
-
     body {
       margin: 0;
-      font-family: 'Arial', sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background: var(--bg);
       color: var(--text);
       transition: 0.3s;
     }
-
     .topbar {
       background: var(--card);
-      padding: 12px 16px;
+      padding: 14px 16px;
       font-size: 18px;
       font-weight: bold;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       display: flex;
       align-items: center;
     }
-
-    .topbar i {
-      margin-right: 12px;
-      cursor: pointer;
-    }
+    .topbar i { margin-right: 12px; cursor: pointer; }
 
     .setting {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 20px;
-      border-bottom: 1px solid #ccc;
+      padding: 16px 20px;
+      border-bottom: 1px solid #ddd;
       background: var(--card);
     }
+    .setting h4 { margin: 0; font-size: 16px; }
 
-    .setting h4 {
-      margin: 0;
-      font-size: 16px;
-    }
-
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 24px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
+    .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
     .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0;
-      right: 0; bottom: 0;
-      background-color: #ccc;
-      transition: 0.3s;
-      border-radius: 24px;
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc; transition: 0.3s; border-radius: 24px;
     }
-
     .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 2px;
-      bottom: 2px;
-      background-color: white;
-      transition: 0.3s;
-      border-radius: 50%;
+      position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px;
+      background-color: white; transition: 0.3s; border-radius: 50%;
     }
-
-    input:checked + .slider {
-      background-color: #4CAF50;
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(26px);
-    }
+    input:checked + .slider { background-color: blueviolet; }
+    input:checked + .slider:before { transform: translateX(26px); }
 
     .logout-btn {
-      width: 90%;
-      margin: 20px auto;
-      display: block;
-      padding: 12px;
-      background: #e53935;
-      color: white;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      text-align: center;
+      width: 90%; margin: 25px auto; display: block; padding: 12px;
+      background: linear-gradient(to left, red, blueviolet);
+      color: white; font-size: 16px; border: none; border-radius: 28px;
+      cursor: pointer; text-align: center;
+    }
+    .logout-btn:hover { opacity: 0.9; }
+
+    /* Account list */
+    .accounts-list { padding: 10px 20px; background: var(--card); }
+    .account-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; cursor: pointer;
+    }
+    .account-item span { font-size: 15px; }
+    .account-item button {
+      padding: 4px 10px; font-size: 12px; border: none;
+      border-radius: 12px; background: linear-gradient(to left, red, blueviolet);
+      color: white; cursor: pointer;
     }
 
-    .logout-btn:hover {
-      background: #c62828;
+    /* Popup box */
+    .popup {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
+    }
+    .popup-content {
+      background: var(--bg); padding: 20px; border-radius: 16px; width: 90%; max-width: 350px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: relative;
+    }
+    .popup-content h3 { margin-top: 0; text-align: center; }
+    .popup-content input {
+      width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc;
+      border-radius: 8px; font-size: 14px;
+    }
+    .popup-content button {
+      width: 100%; padding: 10px; margin-top: 10px;
+      background: linear-gradient(to right, blueviolet, red);
+      border: none; border-radius: 20px; color: white; font-size: 15px; cursor: pointer;
+    }
+    .popup-content .link {
+      text-align: center; margin-top: 10px; font-size: 14px; color: blueviolet; cursor: pointer;
+    }
+    .close-btn {
+      position: absolute; top: 8px; right: 52px; font-size: 50px;
+      cursor: pointer; color: red;
     }
   </style>
 </head>
@@ -120,8 +109,7 @@
 
   <!-- Top Bar -->
   <div class="topbar">
-    <i class="fas fa-arrow-left" onclick="history.back()"></i>
-    Settings
+    <i class="fas fa-arrow-left" onclick="history.back()"></i> Settings
   </div>
 
   <!-- Dark Mode -->
@@ -133,7 +121,7 @@
     </label>
   </div>
 
-  <!-- Notification -->
+  <!-- Notifications -->
   <div class="setting">
     <h4>Notifications</h4>
     <label class="switch">
@@ -142,42 +130,26 @@
     </label>
   </div>
 
-  <!-- Privacy -->
+  <!-- Chat Settings -->
   <div class="setting">
-    <h4>Private Account</h4>
-    <label class="switch">
-      <input type="checkbox" id="privateToggle">
-      <span class="slider"></span>
-    </label>
+    <h4>Chat Settings</h4>
+    <i class="fas fa-chevron-right"></i>
   </div>
 
-  <!-- Language -->
+  <!-- Call Settings -->
   <div class="setting">
-    <h4>Language</h4>
-    <select id="langSelect">
-      <option>English</option>
-      <option>Hindi</option>
-      <option>Spanish</option>
-      <option>French</option>
-    </select>
+    <h4>Call Settings</h4>
+    <i class="fas fa-chevron-right"></i>
   </div>
 
-  <!-- Auto Play Videos -->
+  <!-- Accounts -->
   <div class="setting">
-    <h4>Auto Play Videos</h4>
-    <label class="switch">
-      <input type="checkbox" id="autoPlayToggle">
-      <span class="slider"></span>
-    </label>
+    <h4>Accounts</h4>
+    <i class="fas fa-chevron-down"></i>
   </div>
-
-  <!-- Data Saver -->
-  <div class="setting">
-    <h4>Data Saver Mode</h4>
-    <label class="switch">
-      <input type="checkbox" id="dataSaverToggle">
-      <span class="slider"></span>
-    </label>
+  <div class="accounts-list" id="accountsList"></div>
+  <div class="setting" onclick="openPopup()">
+    <h4 style="color:blueviolet;">Add New Account</h4>
   </div>
 
   <!-- Delete Account -->
@@ -186,20 +158,31 @@
     <i class="fas fa-trash" style="color:red; cursor:pointer;" onclick="deleteAccount()"></i>
   </div>
 
-  <!-- Logout Button -->
+  <!-- Logout -->
   <button class="logout-btn" onclick="logout()">Log Out</button>
+
+  <!-- Popup for new account -->
+  <div class="popup" id="popupBox">
+    <div class="popup-content">
+      <span class="close-btn" onclick="closePopup()">&times;</span>
+      <h3>Add Account</h3>
+      <input type="text" id="popupUser" placeholder="Username">
+      <input type="password" id="popupPass" placeholder="Password">
+      <button onclick="addAccount()">Add to List</button>
+      <div class="link" onclick="goRegister()">Create new account</div>
+    </div>
+  </div>
 
   <!-- Font Awesome -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
 
-  <!-- JavaScript -->
   <script>
+    // Theme
     const darkToggle = document.getElementById('darkToggle');
     if (localStorage.getItem("chat_theme") === "dark") {
       document.body.classList.add("dark");
       darkToggle.checked = true;
     }
-
     darkToggle.addEventListener("change", () => {
       if (darkToggle.checked) {
         document.body.classList.add("dark");
@@ -210,21 +193,71 @@
       }
     });
 
+    // Multi-account
+    const accountsList = document.getElementById("accountsList");
+    let accounts = JSON.parse(localStorage.getItem("chat_accounts")) || [];
+    let activeUser = localStorage.getItem("chat_username");
+
+    function renderAccounts() {
+      accountsList.innerHTML = "";
+      accounts.forEach(acc => {
+        const div = document.createElement("div");
+        div.className = "account-item";
+        div.innerHTML = `
+          <span>@${acc}</span>
+          ${acc === activeUser ? "<b>(Active)</b>" : `<button onclick="switchAccount('${acc}')">Switch</button>`}
+        `;
+        accountsList.appendChild(div);
+      });
+    }
+
+    function openPopup() { document.getElementById("popupBox").style.display = "flex"; }
+    function closePopup() { document.getElementById("popupBox").style.display = "none"; }
+
+    // Sirf list me add karega, switch nahi karega
+    function addAccount() {
+      const uname = document.getElementById("popupUser").value.trim();
+      const pass = document.getElementById("popupPass").value.trim();
+      if (!uname || !pass) { alert("Enter both username & password"); return; }
+      if (!accounts.includes(uname)) {
+        accounts.push(uname);
+        localStorage.setItem("chat_accounts", JSON.stringify(accounts));
+      }
+      renderAccounts();
+      closePopup();
+      alert("Account @" + uname + " added. Click Switch to activate.");
+    }
+
+    // Yehi function switch karega
+    function switchAccount(uname) {
+      localStorage.setItem("chat_username", uname);
+      activeUser = uname;
+      renderAccounts();
+      alert("Switched to @" + uname);
+      location.href = "account.html";
+    }
+
+    function goRegister() {
+      window.location.href = "register.html";
+    }
+
     function logout() {
-      // Firebase logout (or your system)
-      localStorage.removeItem("chat_user");
+      localStorage.removeItem("chat_username");
       alert("Logged out successfully.");
       window.location.href = "login.html";
     }
 
     function deleteAccount() {
-      if (confirm("Are you sure you want to delete your account? This can't be undone.")) {
-        // Add Firebase delete code here
-        alert("Account deleted successfully.");
-        localStorage.clear();
+      if (confirm("Are you sure you want to delete your account?")) {
+        accounts = accounts.filter(acc => acc !== activeUser);
+        localStorage.setItem("chat_accounts", JSON.stringify(accounts));
+        localStorage.removeItem("chat_username");
+        alert("Account deleted.");
         window.location.href = "register.html";
       }
     }
+
+    renderAccounts();
   </script>
 </body>
-</html>
+  </html>
