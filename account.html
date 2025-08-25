@@ -9,40 +9,45 @@
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #f5f5f5;
+      background: #fff;
     }
 
     .topbar {
-      background: f5f5f5 ;
-      color: #555;
+      background: #fff ;
+      color: #000;
       padding: 12px 16px;
       display: flex;
       align-items: center;
-      gap: 14px;
+      justify-content: space-between;
       font-size: 18px;
       font-weight: 600;
     }
 
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
     .profile {
       padding: 20px 16px 10px;
-      background: #f5f5f5;
+      background: #fff;
       display: flex;
       align-items: center;
       gap: 16px;
       border-radius: 16px;
       margin: 16px;
-      
     }
 
     .dp {
       position: relative;
-      width: 120px;
-      height: 120px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
       overflow: hidden;
       background: linear-gradient(to left, red, blueviolet);
       color: white;
-      font-size: 32px;
+      font-size: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -53,29 +58,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-
-    .dp-overlay {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
-      text-align: center;
-    }
-
-    .dp-emoji {
-      font-size: 55px;
-      line-height: 1;
-    }
-
-    .dp-text {
-      font-size: 12px;
-      color: white;
-      text-shadow: 1px 1px 3px black;
     }
 
     .info h2 {
@@ -99,7 +81,7 @@
       padding: 10px 16px;
       color: blueviolet;
       margin: 0 16px;
-      background: #f5f5f5;
+      background: #fff;
       border-radius: 12px;
       margin-top: 10px;
     }
@@ -130,69 +112,112 @@
       cursor: pointer;
     }
 
-    .edit-btn {
+    .edit-btn, .share-btn {
       background: linear-gradient(to left, red, blueviolet);
       color: white;
     }
 
-    .share-btn {
-      background: linear-gradient(to left, red, blueviolet);
-      color: white;
-    }
-
-    .tabs {
-      display: flex;
-      margin: 10px 16px;
-      background:#fff;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    }
-
-    .tab-btn {
-      flex: 1;
-      text-align: center;
-      padding: 12px 0;
-      font-weight: bold;
-      color: #888;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .tab-btn.active {
-      background: linear-gradient(to left, red, blueviolet);
-      color: white;
-    }
-
-    .posts-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
+    /* Follow more users section */
+    .follow-section {
+      margin: 20px 0;
       padding: 10px;
     }
 
-    .post-item {
-      width: 100%;
-      aspect-ratio: 1/1;
-      overflow: hidden;
-      position: relative;
+    .follow-section h3 {
+      margin: 0 0 10px 16px;
+      color: #444;
+      font-size: 18px;
     }
 
-    .post-item img, .post-item video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .follow-list {
+      display: flex;
+      overflow-x: auto;
+      gap: 12px;
+      padding: 0 16px 10px;
+      scroll-behavior: smooth;
     }
 
-    .type-label {
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-      background: rgba(0,0,0,0.5);
+    .user-card {
+      min-width: 140px;
+      background: white;
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+
+    .user-card .user-dp {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin: auto;
+      background: linear-gradient(to right, red, blueviolet);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       color: white;
-      font-size: 10px;
-      padding: 2px 5px;
-      border-radius: 5px;
+      font-weight: bold;
+      font-size: 20px;
+      overflow: hidden;
+    }
+
+    .user-card h4 {
+      margin: 8px 0 4px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .user-card p {
+      margin: 0;
+      font-size: 12px;
+      color: gray;
+    }
+
+    .user-card button {
+      margin-top: 8px;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(to left, red, blueviolet);
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    /* Settings section */
+    .settings-section {
+      margin: 20px 0 70px;
+      background: white;
+      border-radius: 16px;
+      padding: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .settings-section h3 {
+      margin: 0 0 10px 16px;
+      color: #444;
+      font-size: 18px;
+    }
+
+    .setting-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .setting-item i {
+      width: 22px;
+      margin-right: 12px;
+      color: #6200ea;
+    }
+
+    .setting-item:last-child {
+      border-bottom: none;
     }
 
     .bottom-nav {
@@ -220,17 +245,15 @@
 <body>
 
   <div class="topbar">
-    <i class="fas fa-arrow-left" onclick="history.back()"></i>
-    <span id="topUsername">@username</span>
+    <div class="topbar-left">
+      <i class="fas fa-arrow-left" onclick="history.back()"></i>
+      <span id="topUsername">@username</span>
+    </div>
+    <i class="fas fa-search" onclick="location.href='search.html'"></i>
   </div>
 
   <div class="profile">
-    <div class="dp" id="profilePic">
-      <div class="dp-overlay">
-        <div class="dp-emoji" id="dpEmoji"></div>
-        <div class="dp-text" id="dpText"></div>
-      </div>
-    </div>
+    <div class="dp" id="profilePic"></div>
     <div class="info">
       <h2 id="fullName">Your Name</h2>
       <p id="username">@username</p>
@@ -238,7 +261,6 @@
   </div>
 
   <div class="counts">
-    <div class="count-item"><b id="postCount">0</b><br>Posts</div>
     <div class="count-item" onclick="location.href='follower.html'"><b id="followersCount">0</b><br>Followers</div>
     <div class="count-item" onclick="location.href='following.html'"><b id="followingCount">0</b><br>Following</div>
   </div>
@@ -248,17 +270,26 @@
     <button class="share-btn" onclick="navigator.share ? navigator.share({ title: 'Chatgram', text: 'Check out my Chatgram profile!' }) : alert('Not supported')">Share</button>
   </div>
 
-  <div class="tabs">
-    <div class="tab-btn active" onclick="filterPosts('image', this)">Images</div>
-    <div class="tab-btn" onclick="filterPosts('video', this)">Videos</div>
-    <div class="tab-btn" onclick="filterPosts('blog', this)">Blogs</div>
+  <!-- Follow More Users Section -->
+  <div class="follow-section">
+    <h3>Follow More Users</h3>
+    <div class="follow-list" id="followList"></div>
   </div>
 
-  <div class="posts-grid" id="postGrid"></div>
+  <!-- Settings Section -->
+  <div class="settings-section">
+    <h3>Settings</h3>
+    <div class="setting-item" onclick="location.href='settings.html'"><i class="fas fa-palette"></i> Themes</div>
+    <div class="setting-item" onclick="location.href='settings.html'"><i class="fas fa-home"></i> Home Settings</div>
+    <div class="setting-item" onclick="location.href='settings.html'"><i class="fas fa-comment-dots"></i> Chat Settings</div>
+    <div class="setting-item" onclick="location.href='settings.html'"><i class="fas fa-phone"></i> Call Settings</div>
+    <div class="setting-item" onclick="location.href='settings.html'"><i class="fas fa-adjust"></i> System Theme</div>
+    <div class="setting-item" onclick="location.href='settings.html'"><i class="fas fa-bell"></i> Notifications</div>
+    <div class="setting-item" onclick="location.href='settings.html'"><i class="fas fa-lock"></i> Allow & Permissions</div>
+  </div>
 
   <div class="bottom-nav">
     <i class="fas fa-home" onclick="location.href='contacts.html'"></i>
-    
     <i class="fas fa-phone" onclick="location.href='call.html'"></i>
     <i class="fas fa-user active" onclick="location.href='account.html'"></i>
   </div>
@@ -286,28 +317,51 @@
     const unameEl = document.getElementById("username");
     const topUname = document.getElementById("topUsername");
     const dpEl = document.getElementById("profilePic");
-    const postGrid = document.getElementById("postGrid");
-    const dpEmoji = document.getElementById("dpEmoji");
-    const dpText = document.getElementById("dpText");
+    const followList = document.getElementById("followList");
 
-    let allPosts = [];
-
+    // Load current user data
     db.ref("users/" + username).once("value", snap => {
       const user = snap.val();
       nameEl.innerText = user.name || "Name";
       unameEl.innerText = "@" + username;
       topUname.innerText = "@" + username;
-
-      dpEmoji.innerText = user.dpEmoji || "";
-      dpText.innerText = user.dpText || "";
-
       if (user.dp) {
-        dpEl.innerHTML = `<img src="${user.dp}" />` + dpEl.innerHTML;
+        dpEl.innerHTML = `<img src="${user.dp}" />`;
       } else {
-        dpEl.innerHTML = `<span style="font-size:32px;">${user.name ? user.name[0].toUpperCase() : username[0].toUpperCase()}</span>` + dpEl.innerHTML;
+        dpEl.innerText = user.name ? user.name[0].toUpperCase() : username[0].toUpperCase();
       }
     });
 
+    // Load follow suggestions
+    db.ref("users").once("value", snapshot => {
+      followList.innerHTML = "";
+      snapshot.forEach(child => {
+        const user = child.val();
+        const uname = child.key;
+        if (uname !== username) {
+          db.ref("followers/" + username + "/" + uname).once("value", fSnap => {
+            if (!fSnap.exists()) {
+              const div = document.createElement("div");
+              div.className = "user-card";
+              div.innerHTML = `
+                <div class="user-dp">${user.dp ? `<img src="${user.dp}" style="width:100%;height:100%;border-radius:50%;">` : (user.name ? user.name[0].toUpperCase() : uname[0].toUpperCase())}</div>
+                <h4>${user.name || "Unknown"}</h4>
+                <p>@${uname}</p>
+                <button onclick="followUser('${uname}')">Follow</button>
+              `;
+              followList.appendChild(div);
+            }
+          });
+        }
+      });
+    });
+
+    function followUser(targetUser) {
+      db.ref("followers/" + targetUser + "/" + username).set(true);
+      alert("Followed @" + targetUser);
+    }
+
+    // Load followers/following count
     db.ref("followers").on("value", snap => {
       let followers = 0, following = 0;
       snap.forEach(child => {
@@ -317,34 +371,6 @@
       document.getElementById("followersCount").innerText = followers;
       document.getElementById("followingCount").innerText = following;
     });
-
-    db.ref("posts").orderByChild("username").equalTo(username).on("value", snap => {
-      allPosts = [];
-      snap.forEach(postSnap => {
-        const post = postSnap.val();
-        allPosts.push(post);
-      });
-      document.getElementById("postCount").innerText = allPosts.length;
-      filterPosts('image', document.querySelector('.tab-btn.active'));
-    });
-
-    function filterPosts(type, btn) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      postGrid.innerHTML = '';
-      allPosts.filter(p => p.type === type).forEach(post => {
-        const div = document.createElement("div");
-        div.className = "post-item";
-        if (type === 'image') {
-          div.innerHTML = `<img src="${post.content}"><div class="type-label">Image</div>`;
-        } else if (type === 'video') {
-          div.innerHTML = `<video src="${post.content}" muted></video><div class="type-label">Video</div>`;
-        } else if (type === 'blog') {
-          div.innerHTML = `<div style="padding:10px;font-size:13px;">📝 ${post.content.slice(0, 50)}...</div><div class="type-label">Blog</div>`;
-        }
-        postGrid.appendChild(div);
-      });
-    }
   </script>
 </body>
-  </html>
+</html>
