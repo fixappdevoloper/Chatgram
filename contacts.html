@@ -99,13 +99,191 @@
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
     <i class="fas fa-home active" onclick="goTo('contacts.html')"></i>
-    <i class="fas fa-video" onclick="goTo('video.html')"></i>
-    <i class="fas fa-plus-circle" onclick="goTo('post.html')"></i>
+    
+    <i class="fas fa-phone" onclick="goTo('call.html')"></i>
     <i class="fas fa-user" onclick="goTo('account.html')"></i>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const username = localStorage.getItem("chat_username");
+    const userList = document.getElementById("userList");
+    if (!username) location.href = "register.html";
+
+    db.ref("status/" + username).set({ typing: false });
+    window.addEventListener("beforeunload", () => {
+      db.ref("status/" + username).remove();
+    });
+
+    async function loadUsers() {
+      const usersSnap = await db.ref("users").once("value");
+      const chatSnap = await db.ref("chats/" + username).once("value");
+
+      const chatUsers = new Set();
+      const messageCount = {};
+      if (chatSnap.exists()) {
+        Object.entries(chatSnap.val()).forEach(([uid, messages]) => {
+          chatUsers.add(uid);
+          messageCount[uid] = Object.keys(messages).length;
+        });
+      }
+
+      const followed = await db.ref("followers/" + username).once("value");
+      const followedUsers = followed.exists() ? Object.keys(followed.val()) : [];
+
+      const sortedUsers = [];
+
+      usersSnap.forEach(user => {
+        const uname = user.key;
+        const data = user.val();
+        if (uname === username) return;
+
+        const hasChat = chatUsers.has(uname);
+        const count = messageCount[uname] || 0;
+        sortedUsers.push({ uname, data, hasChat, count });
+      });
+
+      // Sort: chats with most messages first
+      sortedUsers.sort((a, b) => b.count - a.count || b.hasChat - a.hasChat);
+
+      userList.innerHTML = "<h3 style='padding:10px;'>Chat Contacts:</h3>";
+
+      sortedUsers.forEach(({ uname, data, hasChat, count }) => {
+        const div = document.createElement("div");
+        div.className = "user";
+
+        const left = document.createElement("div");
+        left.className = "left";
+
+        const dp = document.createElement("div");
+        dp.className = "dp";
+        dp.onclick = (e) => {
+          e.stopPropagation();
+          localStorage.setItem("profile_user", uname);
+          location.href = "users-profile.html";
+        };
+
+        if (data.dp) {
+          const img = document.createElement("img");
+          img.src = data.dp;
+          dp.appendChild(img);
+        } else {
+          dp.innerText = data.name ? data.name.charAt(0).toUpperCase() : uname.charAt(0).toUpperCase();
+        }
+
+        // Message count badge
+        if (count > 0) {
+          const badge = document.createElement("div");
+          badge.className = "badge";
+          badge.innerText = count;
+          dp.appendChild(badge);
+        }
+
+        const info = document.createElement("div");
+        info.innerHTML = `
+          <b>${data.name}</b><br>
+          <small>@${uname}</small><br>
+          <span id="status-${uname}" style="font-size:12px; color:gray;">Loading...</span>
+        `;
+
+        left.appendChild(dp);
+        left.appendChild(info);
+        div.appendChild(left);
+
+        const right = document.createElement("div");
+        right.style.display = "flex";
+        right.style.flexDirection = "column";
+        right.style.alignItems = "flex-end";
+        right.style.gap = "5px";
+
+        if (followedUsers.includes(uname)) {
+          const msgBtn = document.createElement("button");
+          msgBtn.innerText = "Message";
+          msgBtn.style.padding = "5px 10px";
+          msgBtn.style.background = "blueviolet";
+          msgBtn.style.color = "white";
+          msgBtn.style.border = "none";
+          msgBtn.style.borderRadius = "6px";
+          msgBtn.style.cursor = "pointer";
+          msgBtn.onclick = (e) => {
+            e.stopPropagation();
+            localStorage.setItem("chat_with", uname);
+            localStorage.setItem("chat_with_name", data.name);
+            location.href = "chat.html";
+          };
+          right.appendChild(msgBtn);
+        } else {
+          const followBtn = document.createElement("button");
+          followBtn.innerText = "Follow";
+          followBtn.style.padding = "5px 10px";
+          followBtn.style.background = "green";
+          followBtn.style.color = "white";
+          followBtn.style.border = "none";
+          followBtn.style.borderRadius = "6px";
+          followBtn.style.cursor = "pointer";
+          followBtn.onclick = async (e) => {
+            e.stopPropagation();
+            await db.ref("followers/" + username + "/" + uname).set(true);
+            loadUsers();
+          };
+          right.appendChild(followBtn);
+        }
+
+        div.appendChild(right);
+        userList.appendChild(div);
+
+        db.ref("status/" + uname).on("value", statusSnap => {
+          const status = statusSnap.val();
+          const statusEl = document.getElementById("status-" + uname);
+          if (statusEl) {
+            if (status?.typing) {
+              statusEl.innerText = "Typing...";
+              statusEl.style.color = "blue";
+            } else if (status) {
+              statusEl.innerText = "Online";
+              statusEl.style.color = "green";
+            } else {
+              statusEl.innerText = "Offline";
+              statusEl.style.color = "gray";
+            }
+          }
+        });
+      });
+    }
+
+    loadUsers();
+
+    function goTo(page) {
+      location.href = page;
+    }
+
+    function toggleMenu(e) {
+      e.stopPropagation();
+      document.getElementById("menu").classList.toggle("show");
+    }
+
+    window.addEventListener("click", () => {
+      const menu = document.getElementById("menu");
+      if (menu) menu.classList.remove("show");
+    });
+  </script>
+</body>
+  </html>  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <script>
