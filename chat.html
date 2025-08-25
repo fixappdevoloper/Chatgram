@@ -36,11 +36,16 @@ right: 0; }
   </style>
 </head>
 <body>
+  
 
   <div class="header">  
     <i class="fas fa-arrow-left" onclick="history.back()"></i>  
     <span class="name" id="chatWith">Chat</span>  
-    <div class="menu-wrapper">  
+    <div class="menu-wrapper">
+      
+        <!-- Call Icon -->
+  <i class="fas fa-phone" style="margin-left:auto; margin-right:15px; cursor:pointer;" onclick="startVoiceCall()"></i>  
+  
       <i class="fas fa-ellipsis-v" onclick="toggleMenu()"></i>  
       <div class="menu-options" id="menuOptions">  
         <div onclick="viewProfile()">View Profile</div>  
@@ -250,6 +255,33 @@ right: 0; }
     window.addEventListener("beforeunload", () => {
       db.ref("status/" + sender).remove();
     });
+    
+    function startVoiceCall() {
+  // Call request bhejna
+  db.ref("calls/" + receiver).set({
+    from: sender,
+    name: sender,
+    type: "voice",
+    time: Date.now(),
+  });
+  localStorage.setItem("call_with", receiver);
+  alert("📞 Calling " + receiverName + "...");
+  location.href = "voicecall.html"; // redirect to call page
+}
+
+// Incoming call listener (agar dusre bande ne call kiya ho)
+db.ref("calls/" + sender).on("value", snap => {
+  if (snap.exists()) {
+    const call = snap.val();
+    if (confirm("📞 Incoming Voice Call from " + call.name + ". Accept?")) {
+      localStorage.setItem("call_with", call.from);
+      db.ref("calls/" + sender).remove(); // clear
+      location.href = "voicecall.html";
+    } else {
+      db.ref("calls/" + sender).remove();
+    }
+  }
+});
   </script>
 </body>
   </html>
