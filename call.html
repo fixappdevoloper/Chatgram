@@ -19,11 +19,13 @@
     .icons { display: flex; align-items: center; gap: 15px; }
     .icons i { font-size: 20px; cursor: pointer; color: black; }
 
+    h3 { margin:10px; color:#444; }
+
     .user {
       background: white; padding: 10px; margin: 8px 10px;
       border-radius: 8px; display: flex; align-items: center;
       justify-content: space-between; gap: 12px;
-      box-shadow:0 2px 5px rgba(0,0,0,0.08);
+      border:1px solid #eee;
     }
     .left { display: flex; align-items: center; gap: 12px; flex: 1; }
 
@@ -43,7 +45,15 @@
     }
     .voice { background: green; }
     .video { background: blueviolet; }
-    .follow-btn { background: gray; }
+    .follow-btn { background: #ccc; }
+
+    .followers-count {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+      display: block;
+    }
+
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; width: 100%;
       background: white; display: flex; justify-content: space-around;
@@ -67,7 +77,12 @@
   </div>
 
   <!-- Call List -->
-  <div id="callList"><h3 style="padding:10px;">Your Call Contacts:</h3></div>
+  <div id="callList">
+    <h3>Following</h3>
+    <div id="followingList"></div>
+    <h3>Others</h3>
+    <div id="othersList"></div>
+  </div>
 
   <!-- Bottom Navigation -->
   <div class="bottom-nav">
@@ -94,64 +109,85 @@
     const db = firebase.database();
 
     const username = localStorage.getItem("chat_username");
-    const callList = document.getElementById("callList");
     if (!username) location.href = "register.html";
+
+    const followingList = document.getElementById("followingList");
+    const othersList = document.getElementById("othersList");
 
     async function loadUsers() {
       const usersSnap = await db.ref("users").once("value");
       const followedSnap = await db.ref("followers/" + username).once("value");
       const followedUsers = followedSnap.exists() ? Object.keys(followedSnap.val()) : [];
 
-      callList.innerHTML = "<h3 style='padding:10px;'>Your Call Contacts:</h3>";
+      followingList.innerHTML = "";
+      othersList.innerHTML = "";
 
       usersSnap.forEach(user => {
         const uname = user.key;
         const data = user.val();
         if (uname === username) return;
 
-        const div = document.createElement("div");
-        div.className = "user";
-
-        const left = document.createElement("div");
-        left.className = "left";
-
-        const dp = document.createElement("div");
-        dp.className = "dp";
-        if (data.dp) {
-          const img = document.createElement("img");
-          img.src = data.dp;
-          dp.appendChild(img);
-        } else {
-          dp.innerText = data.name ? data.name.charAt(0).toUpperCase() : uname.charAt(0).toUpperCase();
-        }
-
-        const info = document.createElement("div");
-        info.innerHTML = `<b>${data.name || uname}</b><br><small>@${uname}</small>`;
-
-        left.appendChild(dp);
-        left.appendChild(info);
-
-        const right = document.createElement("div");
-        right.className = "right";
+        const div = createUserDiv(uname, data, followedUsers.includes(uname));
 
         if (followedUsers.includes(uname)) {
-          addCallButtons(right, uname, data.name);
+          followingList.appendChild(div);
         } else {
-          const followBtn = document.createElement("button");
-          followBtn.innerText = "Follow";
-          followBtn.className = "follow-btn";
-          followBtn.onclick = async () => {
-            await db.ref("followers/" + username + "/" + uname).set(true);
-            followBtn.remove();
-            addCallButtons(right, uname, data.name);
-          };
-          right.appendChild(followBtn);
+          othersList.appendChild(div);
         }
-
-        div.appendChild(left);
-        div.appendChild(right);
-        callList.appendChild(div);
       });
+    }
+
+    function createUserDiv(uname, data, isFollowing) {
+      const div = document.createElement("div");
+      div.className = "user";
+
+      const left = document.createElement("div");
+      left.className = "left";
+
+      const dp = document.createElement("div");
+      dp.className = "dp";
+      if (data.dp) {
+        const img = document.createElement("img");
+        img.src = data.dp;
+        dp.appendChild(img);
+      } else {
+        dp.innerText = data.name ? data.name.charAt(0).toUpperCase() : uname.charAt(0).toUpperCase();
+      }
+
+      const info = document.createElement("div");
+      info.innerHTML = `<b>${data.name || uname}</b><br><small>@${uname}</small>`;
+
+      left.appendChild(dp);
+      left.appendChild(info);
+
+      const right = document.createElement("div");
+      right.className = "right";
+
+      if (isFollowing) {
+        addCallButtons(right, uname, data.name);
+      } else {
+        const followBtn = document.createElement("button");
+        followBtn.innerText = "Follow";
+        followBtn.className = "follow-btn";
+        followBtn.onclick = async () => {
+          await db.ref("followers/" + username + "/" + uname).set(true);
+          loadUsers(); // Refresh lists after follow
+        };
+        right.appendChild(followBtn);
+
+        // Followers count niche show karna
+        const followersCount = document.createElement("span");
+        followersCount.className = "followers-count";
+        db.ref("followers/" + uname).once("value").then(snap => {
+          const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+          followersCount.innerText = count + " followers";
+        });
+        info.appendChild(followersCount);
+      }
+
+      div.appendChild(left);
+      div.appendChild(right);
+      return div;
     }
 
     function addCallButtons(container, uname, name) {
@@ -197,4 +233,4 @@
     function goTo(page) { location.href = page; }
   </script>
 </body>
-</html>
+  </html>
