@@ -18,6 +18,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-direction: column;
     }
 
     .container {
@@ -25,21 +26,32 @@
       max-width: 380px;
       padding: 30px;
       text-align: center;
+      margin-bottom: 80px; /* space for bottom button */
     }
 
-    .chatgram-logo {
-      font-family: 'Pacifico', cursive;
-      font-size: 60px;
-      margin-bottom: 20px;
-      background: linear-gradient(to left, red, blueviolet);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .top-bar {
+      position: fixed;
+      font-family: 'Pacific', cursive;
+  top: 0;            /* 🔹 Top me dikhane ke liye */
+  left: 0;
+  width: 100%;
+  padding: 18px;
+  text-align: center;
+  background: #3897f0;
+  color: white;
+  font-size: 56px;
+  font-weight: bold;
+  text-decoration: none;
+  border-bottom-left-radius: 10px;  /* 🔹 Top bar ke liye niche round hoga */
+  border-bottom-right-radius: 10px;
+  cursor: pointer;
+  z-index: 1000;
     }
 
     h2 {
       margin: 0 0 20px;
-      font-size: 24px;
-      color: #000;
+      font-size: 31px;
+      color: #3897f0;
     }
 
     input, select, button {
@@ -54,10 +66,12 @@
 
     button {
       background-color: #3897f0;
+      font-size: 16px;
       color: white;
       font-weight: bold;
       border: none;
       transition: background 0.3s;
+      border-radius: 25px;
     }
 
     button:hover {
@@ -80,9 +94,7 @@
     .status-icon.success { color: green; }
     .status-icon.error { color: red; }
 
-    .toggle-icon {
-      color: #555;
-    }
+    .toggle-icon { color: #555; }
 
     .policy {
       font-size: 13px;
@@ -92,23 +104,54 @@
 
     .hidden { display: none; }
 
-    p {
+    /* Username Suggestions */
+    #usernameSuggestions {
+      list-style: none;
+      margin: 5px 0 0;
+      padding: 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      text-align: left;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    #usernameSuggestions li {
+      padding: 8px 12px;
+      cursor: pointer;
       font-size: 14px;
-      margin-top: 20px;
-      color: #333;
+    }
+    #usernameSuggestions li:hover {
+      background: #f1f1f1;
     }
 
-    a {
-      color: #3897f0;
-      text-decoration: none;
+    /* Bottom Login Button */
+    .login-btn {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 18px;
+      text-align: center;
+      background: #3897f0;
+      color: white;
+      font-size: 18px;
       font-weight: bold;
+      text-decoration: none;
+      border-top-left-radius: 75px;
+      border-top-right-radius: 75px;
+      cursor: pointer;
+    }
+
+    .login-btn:hover {
+      background: #3897f0;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="chatgram-logo">Chatgram</div>
+    <div class="top-bar">Chatgram</div>
     <h2>Join Chatgram</h2>
 
     <!-- Step 1 -->
@@ -124,6 +167,9 @@
         <input id="username" placeholder="Choose Username" oninput="validateUsername()" />
         <i id="usernameStatus" class="status-icon"></i>
       </div>
+
+      <!-- Suggestions list -->
+      <ul id="usernameSuggestions" class="hidden"></ul>
 
       <div class="field-container">
         <input id="password" type="password" placeholder="Create Password" />
@@ -141,16 +187,17 @@
       </div>
       <button onclick="register()">Accept & Register</button>
     </div>
-
-    <p>Already have an account? <a href="login.html">Login</a></p>
   </div>
+
+  <!-- Bottom Login Button -->
+  <a href="login.html" class="login-btn">Login</a>
 
   <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      apiKey: "AIzaSyBcondition ? true : false6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
       authDomain: "chatgram-app-a.firebaseapp.com",
       databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
       projectId: "chatgram-app-a",
@@ -188,22 +235,54 @@
     function validateUsername() {
       const username = document.getElementById('username').value.trim();
       const icon = document.getElementById('usernameStatus');
+      const suggestionBox = document.getElementById('usernameSuggestions');
 
       if (/[A-Z\s]/.test(username)) {
         icon.className = "fa fa-times status-icon error";
+        suggestionBox.classList.add("hidden");
         return;
       }
 
       if (username.length < 3) {
         icon.className = "";
+        suggestionBox.classList.add("hidden");
         return;
       }
 
-      db.ref("users/" + username).once("value", snapshot => {
-        if (snapshot.exists()) {
+      db.ref("users").once("value", snapshot => {
+        let suggestions = [];
+        let exists = snapshot.hasChild(username);
+
+        if (exists) {
           icon.className = "fa fa-times status-icon error";
+          for (let i = 1; i <= 5; i++) {
+            suggestions.push(username + i);
+          }
         } else {
           icon.className = "fa fa-check status-icon success";
+          snapshot.forEach(child => {
+            let name = child.key;
+            if (name.startsWith(username)) {
+              suggestions.push(name);
+            }
+          });
+        }
+
+        if (suggestions.length > 0) {
+          suggestionBox.innerHTML = "";
+          suggestions.forEach(s => {
+            let li = document.createElement("li");
+            li.textContent = s;
+            li.onclick = () => {
+              document.getElementById('username').value = s;
+              suggestionBox.classList.add("hidden");
+              validateUsername();
+            };
+            suggestionBox.appendChild(li);
+          });
+          suggestionBox.classList.remove("hidden");
+        } else {
+          suggestionBox.classList.add("hidden");
         }
       });
     }
@@ -255,4 +334,4 @@
     }
   </script>
 </body>
-          </html>
+</html>
