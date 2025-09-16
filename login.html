@@ -1,147 +1,257 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Login - Chatgram</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-  <style>
-    * {
-      box-sizing: border-box;
-      padding: 0;
-      margin: 0;
-    }
-
-    body {
-      font-family: 'Arial', sans-serif;
-      height: 100vh;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 400px;
-      padding: 40px 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .chatgram-logo {
-      font-family: 'Pacifico', cursive;
-      font-size: 60px;
-      margin-bottom: 30px;
-      background: linear-gradient(to left, red, blueviolet);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    h2 {
-      font-size: 24px;
-      margin-bottom: 20px;
-      color: #000;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      margin-bottom: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      background-color: #3897f0;
-      color: white;
-      border: none;
-      border-radius: 25px;
-      font-size: 16px;
-      font-weight: bold;
-      margin-top: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background-color: #2f80ed;
-    }
-
-    p {
-      margin-top: 20px;
-      color: #333;
-    }
-
-    a {
-      color: #3897f0;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    @media screen and (max-height: 500px) {
-      .container {
-        padding-top: 20px;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <div class="chatgram-logo">Chatgram</div>
-    <h2>Login</h2>
-    <input id="username" placeholder="Username" />
-    <input id="password" type="password" placeholder="Password" />
-    <button onclick="login()">Log In</button>
-    <p>New user? <a href="register.html">Register</a></p>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-  <!-- Firebase Config -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
-      authDomain: "chatgram-app-a.firebaseapp.com",
-      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
-      projectId: "chatgram-app-a",
-      storageBucket: "chatgram-app-a.appspot.com",
-      messagingSenderId: "1067753841739",
-      appId: "1:1067753841739:web:6f14d525d89737172799ce"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    function login() {
-      const username = document.getElementById('username').value.trim().toLowerCase();
-      const password = document.getElementById('password').value;
-
-      if (!username || !password) return alert("Enter both fields!");
-
-      db.ref("users/" + username).once("value", snapshot => {
-        if (!snapshot.exists()) {
-          alert("No user found!");
-        } else {
-          const data = snapshot.val();
-          if (data.password === password) {
-            localStorage.setItem("chat_username", username);
-            localStorage.setItem("chat_name", data.name);
-            alert("Login success!");
-            window.location.href = "contacts.html";
-          } else {
-            alert("Incorrect password!");
-          }
-        }
-      });
-    }
-  </script>
-
-</body>
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8">  
+  <title>Login - Chatgram</title>  
+  <meta name="viewport" content="width=device-width, initial-scale=1">  
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
+  <style>  
+    * { box-sizing: border-box; padding: 0; margin: 0; }  
+  
+    body {  
+      font-family: 'Arial', sans-serif;  
+      height: 100vh;  
+      background: #fff;  
+      display: flex;  
+      align-items: center;  
+      justify-content: center;  
+      flex-direction: column;  
+    }  
+  
+    .container {  
+      width: 100%;  
+      max-width: 400px;  
+      padding: 40px 30px;  
+      display: flex;  
+      flex-direction: column;  
+      align-items: center;  
+      margin-bottom: 80px;  
+    }  
+  
+    h1 {  
+      position: fixed;  
+      font-family: 'Pacific', cursive;  
+      top: 0;  
+      left: 0;  
+      width: 100%;  
+      padding: 18px;  
+      text-align: center;  
+      background: #3897f0;  
+      color: white;  
+      font-size: 56px;  
+      font-weight: bold;  
+      border-bottom-left-radius: 10px;  
+      border-bottom-right-radius: 10px;  
+      cursor: pointer;  
+      z-index: 1000;  
+    }  
+  
+    h2 {  
+      font-size: 50px;  
+      margin-bottom: 20px;  
+      color: #3897f0;  
+    }  
+  
+    input {  
+      width: 100%;  
+      padding: 14px;  
+      margin-bottom: 12px;  
+      border: 1px solid #ccc;  
+      border-radius: 8px;  
+      font-size: 16px;  
+    }  
+  
+    button {  
+      width: 100%;  
+      padding: 14px;  
+      background-color: #3897f0;  
+      color: white;  
+      border: none;  
+      border-radius: 25px;  
+      font-size: 16px;  
+      font-weight: bold;  
+      margin-top: 10px;  
+      cursor: pointer;  
+      transition: background 0.3s;  
+    }  
+    button:hover { background-color: #2f80ed; }  
+  
+    /* Username Suggestion Dropdown */  
+    .suggestions {  
+      width: 100%;  
+      max-height: 150px;  
+      overflow-y: auto;  
+      border: 1px solid #ccc;  
+      border-radius: 8px;  
+      background: #fff;  
+      position: absolute;  
+      z-index: 100;  
+      display: none;  
+    }  
+    .suggestions div {  
+      padding: 10px;  
+      cursor: pointer;  
+    }  
+    .suggestions div:hover {  
+      background: #f0f0f0;  
+    }  
+  
+    /* Password Field with Icon */  
+    .password-wrapper {  
+      position: relative;  
+      width: 100%;  
+    }  
+    .password-wrapper input {  
+      width: 100%;  
+      padding-right: 40px;  
+    }  
+    .password-wrapper i {  
+      position: absolute;  
+      top: 50%;  
+      right: 12px;  
+      transform: translateY(-50%);  
+      cursor: pointer;  
+      color: #555;  
+      font-size: 18px;  
+    }  
+  
+    /* Bottom Register Button */  
+    .register-btn {  
+      position: fixed;  
+      bottom: 0;  
+      left: 0;  
+      width: 100%;  
+      padding: 18px;  
+      text-align: center;  
+      background: #3897f0;  
+      color: white;  
+      font-size: 18px;  
+      font-weight: bold;  
+      text-decoration: none;  
+      border-top-left-radius: 75px;  
+      border-top-right-radius: 75px;  
+      cursor: pointer;  
+    }  
+    .register-btn:hover { background: #3897f0; }  
+  </style>  
+</head>  
+<body>  
+  
+  <div class="container">  
+    <h1>Chatgram</h1>  
+    <h2>Login</h2>  
+  
+    <!-- Username field with suggestions -->  
+    <div style="position: relative; width:100%;">  
+      <input id="username" placeholder="Username" autocomplete="off"/>  
+      <div id="suggestions" class="suggestions"></div>  
+    </div>  
+  
+    <!-- Password field with eye icon -->  
+    <div class="password-wrapper">  
+      <input id="password" type="password" placeholder="Password" />  
+      <i class="fa-solid fa-eye" id="togglePassword"></i>  
+    </div>  
+  
+    <button onclick="login()">Log In</button>  
+  </div>  
+  
+  <a href="register.html" class="register-btn">Create New Account</a>  
+  
+  <!-- Firebase SDK -->  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>  
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>  
+  
+  <script>  
+    const firebaseConfig = {  
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",  
+      authDomain: "chatgram-app-a.firebaseapp.com",  
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",  
+      projectId: "chatgram-app-a",  
+      storageBucket: "chatgram-app-a.appspot.com",  
+      messagingSenderId: "1067753841739",  
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"  
+    };  
+    firebase.initializeApp(firebaseConfig);  
+    const db = firebase.database();  
+  
+    const usernameInput = document.getElementById("username");  
+    const suggestionsBox = document.getElementById("suggestions");  
+    let allUsers = [];  
+  
+    // Load all usernames from Firebase  
+    db.ref("users").once("value", snapshot => {  
+      if (snapshot.exists()) {  
+        allUsers = Object.keys(snapshot.val());  
+      }  
+    });  
+  
+    // Show suggestions on input or focus  
+    usernameInput.addEventListener("input", showSuggestions);  
+    usernameInput.addEventListener("focus", showSuggestions);  
+  
+    function showSuggestions() {  
+      const val = usernameInput.value.toLowerCase();  
+      const filtered = allUsers.filter(u => u.includes(val));  
+      suggestionsBox.innerHTML = "";  
+  
+      if (filtered.length > 0) {  
+        filtered.forEach(user => {  
+          const div = document.createElement("div");  
+          div.textContent = user;  
+          div.onclick = () => {  
+            usernameInput.value = user;  
+            suggestionsBox.style.display = "none";  
+          };  
+          suggestionsBox.appendChild(div);  
+        });  
+        suggestionsBox.style.display = "block";  
+      } else {  
+        suggestionsBox.style.display = "none";  
+      }  
+    }  
+  
+    document.addEventListener("click", e => {  
+      if (!usernameInput.contains(e.target) && !suggestionsBox.contains(e.target)) {  
+        suggestionsBox.style.display = "none";  
+      }  
+    });  
+  
+    // Password show/hide toggle  
+    const togglePassword = document.getElementById("togglePassword");  
+    const passwordInput = document.getElementById("password");  
+  
+    togglePassword.addEventListener("click", () => {  
+      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";  
+      passwordInput.setAttribute("type", type);  
+      togglePassword.classList.toggle("fa-eye");  
+      togglePassword.classList.toggle("fa-eye-slash");  
+    });  
+  
+    function login() {  
+      const username = usernameInput.value.trim().toLowerCase();  
+      const password = passwordInput.value;  
+  
+      if (!username || !password) return alert("Enter both fields!");  
+  
+      db.ref("users/" + username).once("value", snapshot => {  
+        if (!snapshot.exists()) {  
+          alert("No user found!");  
+        } else {  
+          const data = snapshot.val();  
+          if (data.password === password) {  
+            localStorage.setItem("chat_username", username);  
+            localStorage.setItem("chat_name", data.name);  
+            alert("Login success!");  
+            window.location.href = "contacts.html";  
+          } else {  
+            alert("Incorrect password!");  
+          }  
+        }  
+      });  
+    }  
+  </script>  
+  
+</body>  
 </html>
