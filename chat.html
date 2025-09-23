@@ -2,287 +2,281 @@
 <html>
 <head>
   <title>Chatgram - Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #fff; display: flex; flex-direction: column; height: 100vh; }  
-    .header { background: blueviolet; color: white; padding: 10px; display: flex; align-items: center; }  
-    .header i { font-size: 20px; cursor: pointer; }  
-    .header .name { font-size: 18px; font-weight: bold; margin-left: 10px; }  
-    .menu-wrapper { margin-left: auto; position: relative; }  
-    .menu-options { display: none; position: absolute; top: 30px; right: 0; background: white; color: black; border: 1px solid #ccc; border-radius: 10px; z-index: 999; }  
-    .menu-options div { padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; }  
-    .menu-options div:last-child { border-bottom: none; }  
+    body { margin: 0; font-family: sans-serif; background: #f5f5f5; display: flex; flex-direction: column; height: 100vh; }
 
-    .chat-box { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; }  
+    /* Topbar */
+    .topbar {
+      background: white;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid #ddd;
+      position: relative;
+    }
+    .back-btn { font-size: 22px; cursor: pointer; }
+    .chat-user { flex: 1; }
+    .chat-user b { font-size: 16px; }
+    .chat-user small { color: gray; font-size: 12px; display: block; }
 
-    .message { max-width: 70%; margin-bottom: 10px; padding: 10px; border-radius: 20px; word-wrap: break-word; line-height: 1.4; position: relative; }  
-    .sent { align-self: flex-end; color: white; background: blueviolet; border-bottom-right-radius: 4px; }  
-    .received { align-self: flex-start; color: white; background: red; border-bottom-left-radius: 4px; cursor: pointer; transition: transform 0.3s; }  
-    .message img, .message video { max-width: 100%; border-radius: 8px; margin-top: 5px; }  
-    .timestamp { font-size: 11px; text-align: right; color: #ddd; margin-top: 5px; }  
+    /* Call buttons */
+    .call-btn {
+      font-size: 20px;
+      margin-right: 10px;
+      cursor: pointer;
+      color: blueviolet;
+    }
 
-    .input-box { display: flex; padding: 10px; background: white; gap: 5px; align-items: center; position: fixed;
-bottom: 0;
-left: 0;
-right: 0; }  
-    .input-box input[type="text"] { flex: 1; padding: 10px; border-radius: 20px; border: 2px solid #000; }  
-    .input-box input[type="file"] { display: none; }  
-    .input-box button, .input-box label { background: blueviolet; color: white; padding: 8px 12px; border: none; border-radius: 50%; font-size: 18px; cursor: pointer; }  
+    /* Three dots */
+    .menu-btn { font-size: 20px; cursor: pointer; }
+    .dropdown {
+      display: none;
+      position: absolute;
+      right: 10px;
+      top: 50px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+    .dropdown div {
+      padding: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .dropdown div:hover { background: #f0f0f0; }
 
-    #previewModal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #000000cc; justify-content: center; align-items: center; flex-direction: column; z-index: 999; }  
-    #previewContent { max-width: 90%; max-height: 60%; margin-bottom: 10px; }  
-    #previewCaption { padding: 10px; width: 80%; border-radius: 20px; border: none; outline: none; }  
+    /* Chat area */
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      max-width: 70%;
+      padding: 8px 12px;
+      border-radius: 14px;
+      font-size: 14px;
+      line-height: 1.4;
+      word-wrap: break-word;
+      position: relative;
+      user-select: none;
+    }
+    .me { background: blueviolet; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
+    .other { background: white; color: black; align-self: flex-start; border-bottom-left-radius: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .time { font-size: 10px; color: gray; margin-top: 2px; text-align: right; }
+
+    /* Swipe actions */
+    .action-popup {
+      position: absolute;
+      top: -20px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 12px;
+      display: flex;
+      gap: 10px;
+      padding: 4px 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: none;
+    }
+    .action-popup span { cursor: pointer; color: blueviolet; }
+
+    /* Input area */
+    .input-bar {
+      display: flex;
+      padding: 8px;
+      background: white;
+      border-top: 1px solid #ddd;
+      gap: 8px;
+      
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+    }
+    .input-bar input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+      font-size: 14px;
+    }
+    .send-btn {
+      background: blueviolet;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 42px; height: 42px;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
   </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-  
 
-  <div class="header">  
-    <i class="fas fa-arrow-left" onclick="history.back()"></i>  
-    <span class="name" id="chatWith">Chat</span>  
-    <div class="menu-wrapper">
-      
-        <!-- Call Icon -->
-  <i class="fas fa-phone" style="margin-left:auto; margin-right:15px; cursor:pointer;" onclick="startVoiceCall()"></i>  
-  
-      <i class="fas fa-ellipsis-v" onclick="toggleMenu()"></i>  
-      <div class="menu-options" id="menuOptions">  
-        <div onclick="viewProfile()">View Profile</div>  
-        <div onclick="openSettings()">Settings</div>  
-        <div onclick="toggleBlock()" id="blockBtn">Block</div>  
-        <div onclick="unfollow()">Unfollow</div>  
-      </div>  
-    </div>  
-  </div>  
+  <!-- Topbar -->
+  <div class="topbar">
+    <i class="fas fa-arrow-left back-btn" onclick="location.href='contacts.html'"></i>
+    <div class="dp" id="chatDp" style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:blueviolet;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;"></div>
+    <div class="chat-user">
+      <b id="chatName">User</b>
+      <small id="chatStatus">Offline</small>
+    </div>
+    <!-- Call options -->
+    <i class="fas fa-phone call-btn" onclick="location.href='voicecall.html'"></i>
+    <i class="fas fa-video call-btn" onclick="location.href='videocall.html'"></i>
+    <!-- Menu -->
+    <i class="fas fa-ellipsis-v menu-btn" onclick="toggleMenu()"></i>
+    <div class="dropdown" id="menuDropdown">
+      <div onclick="viewProfile()">👤 View Profile</div>
+      <div onclick="unfollowUser()">🚫 Unfollow</div>
+      <div onclick="blockUser()">⛔ Block</div>
+    </div>
+  </div>
 
-  <div class="chat-box" id="chatBox"></div>  
+  <!-- Chat messages -->
+  <div class="chat-box" id="chatBox"></div>
 
-  <div class="input-box">  
-    <label for="media"><i class="fas fa-paperclip"></i></label>  
-    <input type="file" id="media" accept="image/*,video/*">  
-    <input type="text" id="msg" placeholder="Type a message" />  
-    <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>  
-  </div>  
+  <!-- Input -->
+  <div class="input-bar">
+    <input type="text" id="msgInput" placeholder="Type a message..." oninput="setTyping(true)">
+    <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+  </div>
 
-  <div id="previewModal">  
-    <div id="previewContent"></div>  
-    <input type="text" id="previewCaption" placeholder="Add a caption..." />  
-    <div style="margin-top:10px;">  
-      <button onclick="sendPreview()" style="padding:10px 20px; background:blueviolet; color:white; border:none; border-radius:20px;">Send</button>  
-      <button onclick="closePreview()" style="padding:10px 20px; background:gray; color:white; border:none; border-radius:20px;">Cancel</button>  
-    </div>  
-  </div>  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- Firebase -->  
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>  
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>  
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>  
   <script>
-    const firebaseConfig = {  
-      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",  
-      authDomain: "chatgram-app-a.firebaseapp.com",  
-      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",  
-      projectId: "chatgram-app-a",  
-      storageBucket: "chatgram-app-a.appspot.com",  
-      messagingSenderId: "1067753841739",  
-      appId: "1:1067753841739:web:6f14d525d89737172799ce"  
-    };  
-    firebase.initializeApp(firebaseConfig);  
-
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
+      authDomain: "chatgram-app-a.firebaseapp.com",
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
+      projectId: "chatgram-app-a",
+      storageBucket: "chatgram-app-a.appspot.com",
+      messagingSenderId: "1067753841739",
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"
+    };
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const storage = firebase.storage();
 
-    const sender = localStorage.getItem("chat_username");
-    const receiver = localStorage.getItem("chat_with");
-    const receiverName = localStorage.getItem("chat_with_name");
-    document.getElementById("chatWith").innerText = receiverName;
+    const username = localStorage.getItem("chat_username");
+    const chatWith = localStorage.getItem("chat_with");
+    const chatWithName = localStorage.getItem("chat_with_name");
 
-    const chatId = sender < receiver ? `${sender}_${receiver}` : `${receiver}_${sender}`;
-    const chatBox = document.getElementById("chatBox");
-    let isBlocked = localStorage.getItem(chatId + "_blocked") === "true";
+    if (!username || !chatWith) location.href = "contacts.html";
+    document.getElementById("chatName").innerText = chatWithName || chatWith;
 
-    // MENU
+    // Menu toggle
     function toggleMenu() {
-      const menu = document.getElementById("menuOptions");
-      menu.style.display = menu.style.display === "block" ? "none" : "block";
+      const menu = document.getElementById("menuDropdown");
+      menu.style.display = (menu.style.display === "block") ? "none" : "block";
     }
-    function viewProfile() { window.location.href = "users-profile.html"; }
-    function openSettings() { window.location.href = "settings.html"; }
-    function toggleBlock() {
-      isBlocked = !isBlocked;
-      localStorage.setItem(chatId + "_blocked", isBlocked);
-      document.getElementById("blockBtn").innerText = isBlocked ? "Unblock" : "Block";
-      alert(isBlocked ? "Chat blocked" : "Chat unblocked");
-    }
-    function unfollow() { alert("Unfollowed successfully"); }
+    function viewProfile() { location.href = "users-profile.html?u=" + chatWith; }
+    function unfollowUser() { alert("Unfollowed " + chatWithName); toggleMenu(); }
+    function blockUser() { alert("Blocked " + chatWithName); toggleMenu(); }
 
-    // Render Message
-    function renderMessage(msgId, data) {
-      const div = document.createElement("div");
-      const isSent = data.sender === sender;
-      div.className = "message " + (isSent ? "sent" : "received");
-
-      const time = new Date(data.timestamp || Date.now());
-      const formattedTime = `${time.getHours().toString().padStart(2,"0")}:${time.getMinutes().toString().padStart(2,"0")}`;
-
-      let contentHTML = "";
-      if (data.type === "text") {
-        contentHTML = data.message;
-      } else if (data.type === "image") {
-        contentHTML = `<img src="${data.message}" /><div>${data.caption || ""}</div>`;
-      } else if (data.type === "video") {
-        contentHTML = `<video controls src="${data.message}"></video><div>${data.caption || ""}</div>`;
-      }
-
-      if (isSent) {
-        const tickIcon = data.read
-          ? '<i class="fas fa-check-double" style="color:blue;"></i>'
-          : '<i class="fas fa-check"></i>';
-        div.innerHTML = `${contentHTML}<div class="timestamp">${formattedTime} ${tickIcon}</div>`;
-      } else {
-        div.innerHTML = `${contentHTML}<div class="timestamp">${formattedTime}</div>`;
-        db.ref("chats/" + chatId + "/" + msgId).update({ read: true });
-      }
-
-      // Swipe delete
-      let startX = 0, currentX = 0, isSwiping = false;
-      div.addEventListener("touchstart", (e) => {
-        startX = e.touches[0].clientX;
-        isSwiping = true;
-      });
-      div.addEventListener("touchmove", (e) => {
-        if (!isSwiping) return;
-        currentX = e.touches[0].clientX;
-        const diffX = currentX - startX;
-        div.style.transform = `translateX(${diffX}px)`;
-      });
-      div.addEventListener("touchend", () => {
-        isSwiping = false;
-        const diffX = currentX - startX;
-        if (Math.abs(diffX) > 100) {
-          if (confirm("Delete this message?")) {
-            db.ref("chats/" + chatId + "/" + msgId).remove();
-            div.remove();
-          } else {
-            div.style.transform = "translateX(0)";
-          }
-        } else {
-          div.style.transform = "translateX(0)";
-        }
-      });
-
-      chatBox.appendChild(div);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    // Listener
-    db.ref("chats/" + chatId).on("child_added", (snap) => {
-      renderMessage(snap.key, snap.val());
+    // Load DP
+    db.ref("users/" + chatWith).once("value", snap => {
+      const data = snap.val() || {};
+      const dp = document.getElementById("chatDp");
+      if (data.dp) dp.innerHTML = `<img src="${data.dp}" style="width:100%;height:100%;object-fit:cover;">`;
+      else dp.innerText = (data.name ? data.name.charAt(0) : chatWith.charAt(0)).toUpperCase();
     });
 
-    // Send Text Message
-    function sendMessage() {
-      const msg = document.getElementById("msg").value.trim();
-      if (msg === "" || isBlocked) return;
-      db.ref("chats/" + chatId).push({
-        sender, message: msg, type: "text", timestamp: Date.now(), read: false
+    // Status
+    db.ref("status/" + chatWith).on("value", snap => {
+      const st = snap.val();
+      const el = document.getElementById("chatStatus");
+      if (!st) { el.innerText = "Offline"; el.style.color="gray"; }
+      else if (st.typing) { el.innerText = "Typing..."; el.style.color="blue"; }
+      else { el.innerText = "Online"; el.style.color="green"; }
+    });
+
+    // Messages
+    const chatBox = document.getElementById("chatBox");
+    function loadMessages() {
+      const chatId = [username, chatWith].sort().join("_");
+      db.ref("chats/" + chatId).on("child_added", snap => {
+        const data = snap.val();
+        const msgId = snap.key;
+        const div = document.createElement("div");
+        div.className = "msg " + (data.sender === username ? "me" : "other");
+        div.innerHTML = data.message;
+        div.dataset.id = msgId;
+
+        const t = document.createElement("div");
+        t.className = "time";
+        t.innerText = new Date(data.timestamp).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+        div.appendChild(t);
+
+        // Swipe actions
+        const popup = document.createElement("div");
+        popup.className = "action-popup";
+        popup.innerHTML = `<span onclick="deleteMessage('${chatId}','${msgId}',this)">Delete</span> | <span onclick="cancelAction(this)">Cancel</span>`;
+        div.appendChild(popup);
+
+        let startX = 0;
+        div.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+        div.addEventListener("touchend", e => {
+          let endX = e.changedTouches[0].clientX;
+          if (Math.abs(endX - startX) > 60) {
+            popup.style.display = "flex";
+          }
+        });
+
+        chatBox.appendChild(div);
+        chatBox.scrollTop = chatBox.scrollHeight;
       });
-      document.getElementById("msg").value = "";
+    }
+    loadMessages();
+
+    function deleteMessage(chatId, msgId, el) {
+      db.ref("chats/" + chatId + "/" + msgId).remove();
+      el.closest(".msg").remove();
+    }
+    function cancelAction(el) {
+      el.closest(".action-popup").style.display = "none";
+    }
+
+    // Send message
+    function sendMessage() {
+      const input = document.getElementById("msgInput");
+      const text = input.value.trim();
+      if (!text) return;
+      const chatId = [username, chatWith].sort().join("_");
+      const msgRef = db.ref("chats/" + chatId).push();
+      msgRef.set({ sender: username, message: text, timestamp: Date.now() });
+      input.value = "";
       setTyping(false);
     }
 
-    // Media Preview
-    let selectedFile = null, selectedType = null;
-    document.getElementById("media").addEventListener("change", function () {
-      selectedFile = this.files[0];
-      if (!selectedFile) return;
-      selectedType = selectedFile.type.startsWith("image") ? "image" :
-                     selectedFile.type.startsWith("video") ? "video" : null;
-      if (!selectedType) return alert("Only image/video allowed");
-
-      const url = URL.createObjectURL(selectedFile);
-      const preview = document.getElementById("previewContent");
-      preview.innerHTML = selectedType === "image"
-        ? `<img src="${url}" style="max-width:100%; max-height:100%;">`
-        : `<video controls src="${url}" style="max-width:100%; max-height:100%;"></video>`;
-      document.getElementById("previewModal").style.display = "flex";
-    });
-
-    function sendPreview() {
-      if (!selectedFile || !selectedType || isBlocked) return;
-      const caption = document.getElementById("previewCaption").value.trim();
-      const fileName = `${chatId}/${Date.now()}_${selectedFile.name}`;
-      const ref = storage.ref().child(fileName);
-      ref.put(selectedFile).then(snap => snap.ref.getDownloadURL()).then(url => {
-        db.ref("chats/" + chatId).push({
-          sender, message: url, type: selectedType, caption: caption || "", timestamp: Date.now(), read: false
-        });
-        closePreview();
-      });
-    }
-    function closePreview() {
-      selectedFile = null; selectedType = null;
-      document.getElementById("previewModal").style.display = "none";
-      document.getElementById("previewCaption").value = "";
-      document.getElementById("media").value = "";
-    }
-
-    // Online / Typing Status
-    db.ref("status/" + receiver).on("value", snap => {
-      const status = snap.val();
-      const nameEl = document.getElementById("chatWith");
-      if (!status) {
-        nameEl.innerText = receiverName + " - offline";
-      } else if (status.typing) {
-        nameEl.innerText = receiverName + " - typing...";
-      } else {
-        nameEl.innerText = receiverName + " - online";
+    // Typing
+    function setTyping(state) {
+      db.ref("status/" + username).update({ typing: state });
+      if (state) {
+        clearTimeout(window.typingTimeout);
+        window.typingTimeout = setTimeout(()=>setTyping(false), 1500);
       }
-    });
-
-    const msgInput = document.getElementById("msg");
-    let typingTimeout = null;
-    msgInput.addEventListener("input", () => {
-      setTyping(true);
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => setTyping(false), 2000);
-    });
-    function setTyping(isTyping) {
-      db.ref("status/" + sender).set({ typing: isTyping });
     }
-    db.ref("status/" + sender).set({ typing: false });
-    window.addEventListener("beforeunload", () => {
-      db.ref("status/" + sender).remove();
-    });
-    
-    function startVoiceCall() {
-  // Call request bhejna
-  db.ref("calls/" + receiver).set({
-    from: sender,
-    name: sender,
-    type: "voice",
-    time: Date.now(),
-  });
-  localStorage.setItem("call_with", receiver);
-  alert("📞 Calling " + receiverName + "...");
-  location.href = "voicecall.html"; // redirect to call page
-}
 
-// Incoming call listener (agar dusre bande ne call kiya ho)
-db.ref("calls/" + sender).on("value", snap => {
-  if (snap.exists()) {
-    const call = snap.val();
-    if (confirm("📞 Incoming Voice Call from " + call.name + ". Accept?")) {
-      localStorage.setItem("call_with", call.from);
-      db.ref("calls/" + sender).remove(); // clear
-      location.href = "voicecall.html";
-    } else {
-      db.ref("calls/" + sender).remove();
-    }
-  }
-});
+    window.addEventListener("beforeunload", ()=> setTyping(false));
   </script>
 </body>
-    </html>
-  
+</html>
