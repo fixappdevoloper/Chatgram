@@ -1,283 +1,285 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Chatgram - Chat</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body { margin: 0; font-family: sans-serif; background: #f5f5f5; display: flex; flex-direction: column; height: 100vh; }
-
-    /* Topbar */
-    .topbar {
-      background: white;
-      padding: 10px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid #ddd;
-      position: relative;
+<!DOCTYPE html>      
+<html>      
+<head>      
+  <title>Chatgram - Chat</title>      
+  <meta name="viewport" content="width=device-width, initial-scale=1">      
+  <style>      
+    body { margin: 0; font-family: sans-serif; background: url('/images/ads.jpg') no-repeat center center fixed;    
+background-size: cover;
+display: flex; flex-direction: column; height: 100vh; }      
       
-    }
-    .back-btn { font-size: 22px; cursor: pointer; }
-    .chat-user { flex: 1; }
-    .chat-user b { font-size: 16px; }
-    .chat-user small { color: gray; font-size: 12px; display: block; }
-
-    /* Call buttons */
-    .call-btn {
-      font-size: 20px;
-      margin-right: 10px;
-      cursor: pointer;
-      color: blueviolet;
-    }
-
-    /* Three dots */
-    .menu-btn { font-size: 20px; cursor: pointer; }
-    .dropdown {
-      display: none;
-      position: absolute;
-      right: 10px;
-      top: 50px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      z-index: 10;
-    }
-    .dropdown div {
-      padding: 10px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    .dropdown div:hover { background: #f0f0f0; }
-
-    /* Chat area */
-    .chat-box {
-      flex: 1;
-      overflow-y: auto;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .msg {
-      max-width: 70%;
-      padding: 8px 12px;
-      border-radius: 14px;
-      font-size: 14px;
-      line-height: 1.4;
-      word-wrap: break-word;
-      position: relative;
-      user-select: none;
-    }
-    .me { background: blueviolet; color: white; align-self: flex-end; border-bottom-right-radius: 0; }
-    .other { background: white; color: black; align-self: flex-start; border-bottom-left-radius: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    .time { font-size: 10px; color: gray; margin-top: 2px; text-align: right; }
-
-    /* Swipe actions */
-    .action-popup {
-      position: absolute;
-      top: -20px;
-      right: 0;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 12px;
-      display: flex;
-      gap: 10px;
-      padding: 4px 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      display: none;
-    }
-    .action-popup span { cursor: pointer; color: blueviolet; }
-
-    /* Input area */
-    .input-bar {
-      display: flex;
-      padding: 8px;
-      background: white;
-      border-top: 1px solid #ddd;
-      gap: 8px;
+    /* Topbar */      
+    .topbar {      
+      background: #fff;      
+      padding: 10px;      
+      display: flex;      
+      align-items: center;      
+      gap: 12px;      
+      border-bottom: 1px solid #ddd;      
+      position: relative;      
+    }      
+    .back-btn { font-size: 22px; cursor: pointer; }      
+    .chat-user { flex: 1; }      
+    .chat-user b { font-size: 16px; }      
+    .chat-user small { color: gray; font-size: 12px; display: block; }      
       
-      bottom: 0; left: 0; right: 0;
-      background: white;
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-      z-index: 100;
-    }
-    .input-bar input {
-      flex: 1;
-      padding: 10px;
+    /* Call buttons */      
+    .call-btn {      
+      font-size: 20px;      
+      margin-right: 10px;      
+      cursor: pointer;      
+      color: blueviolet;      
+    }      
+      
+    /* Three dots */      
+    .menu-btn { font-size: 20px; cursor: pointer; }      
+    .dropdown {      
+      display: none;      
+      position: absolute;      
+      right: 10px;      
+      top: 50px;      
+      background: white;      
+      border: 1px solid #ddd;      
+      border-radius: 8px;      
+      overflow: hidden;      
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);      
+      z-index: 10;      
+    }      
+    .dropdown div {      
+      padding: 10px;      
+      font-size: 14px;      
+      cursor: pointer;      
+    }      
+    .dropdown div:hover { background: #f0f0f0; }      
+      
+    /* Chat area */      
+    .chat-box {      
+      flex: 1;      
+      overflow-y: auto;      
+      padding: 10px;      
+      display: flex;      
+      flex-direction: column;      
+      gap: 10px;      
+    }      
+    .msg {      
+      max-width: 70%;      
+      padding: 8px 12px;      
+      border-radius: 14px;      
+      font-size: 14px;      
+      line-height: 1.4;      
+      word-wrap: break-word;      
+      position: relative;      
+      user-select: none;      
+    }      
+    .me { background: blueviolet; color: white; align-self: flex-end; border-bottom-right-radius: 0; }      
+    .other { background: white; color: black; align-self: flex-start; border-bottom-left-radius: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }      
+    .time { font-size: 10px; color: gray; margin-top: 2px; text-align: right; }      
+      
+    /* Swipe actions */      
+    .action-popup {      
+      position: absolute;      
+      top: -20px;      
+      right: 0;      
+      background: white;      
+      border: 1px solid #ccc;      
+      border-radius: 6px;      
+      font-size: 12px;      
+      display: flex;      
+      gap: 10px;      
+      padding: 4px 8px;      
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);      
+      display: none;      
+    }      
+    .action-popup span { cursor: pointer; color: blueviolet; }      
+      
+    /* Input area */      
+    .input-bar {      
+      display: flex;      
+      padding: 8px;      
+      background: url('/images/ads.jpg') no-repeat center center fixed;
+background-size: cover;     
+      border-top: 0px solid #000;      
+      gap: 8px;      
+            
+      bottom: 0; left: 0; right: 0;      
+           
+      display: flex;      
+      align-items: center;      
+      padding: 10px;      
+      z-index: 100;      
+    }      
+    .input-bar input {      
+      flex: 1;      
+      padding: 10px;      
       border-radius: 20px;
-      border: 1px solid #ccc;
-      outline: none;
-      font-size: 14px;
-    }
-    .send-btn {
-      background: blueviolet;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 42px; height: 42px;
-      font-size: 18px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-    }
-  </style>
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-</head>
-<body>
-
-  <!-- Topbar -->
-  <div class="topbar">
-    <i class="fas fa-arrow-left back-btn" onclick="location.href='contacts.html'"></i>
-    <div class="dp" id="chatDp" style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:blueviolet;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;"></div>
-    <div class="chat-user">
-      <b id="chatName">User</b>
-      <small id="chatStatus">Offline</small>
-    </div>
-    <!-- Call options -->
-    <i class="fas fa-phone call-btn" onclick="location.href='voicecall.html'"></i>
-    <i class="fas fa-video call-btn" onclick="location.href='videocall.html'"></i>
-    <!-- Menu -->
-    <i class="fas fa-ellipsis-v menu-btn" onclick="toggleMenu()"></i>
-    <div class="dropdown" id="menuDropdown">
-      <div onclick="viewProfile()">👤 View Profile</div>
-      <div onclick="unfollowUser()">🚫 Unfollow</div>
-      <div onclick="blockUser()">⛔ Block</div>
-    </div>
-  </div>
-
-  <!-- Chat messages -->
-  <div class="chat-box" id="chatBox"></div>
-
-  <!-- Input -->
-  <div class="input-bar">
-    <input type="text" id="msgInput" placeholder="Type a message..." oninput="setTyping(true)">
-    <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-  </div>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",
-      authDomain: "chatgram-app-a.firebaseapp.com",
-      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",
-      projectId: "chatgram-app-a",
-      storageBucket: "chatgram-app-a.appspot.com",
-      messagingSenderId: "1067753841739",
-      appId: "1:1067753841739:web:6f14d525d89737172799ce"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const username = localStorage.getItem("chat_username");
-    const chatWith = localStorage.getItem("chat_with");
-    const chatWithName = localStorage.getItem("chat_with_name");
-
-    if (!username || !chatWith) location.href = "contacts.html";
-    document.getElementById("chatName").innerText = chatWithName || chatWith;
-
-    // Menu toggle
-    function toggleMenu() {
-      const menu = document.getElementById("menuDropdown");
-      menu.style.display = (menu.style.display === "block") ? "none" : "block";
-    }
-    function viewProfile() { location.href = "users-profile.html?u=" + chatWith; }
-    function unfollowUser() { alert("Unfollowed " + chatWithName); toggleMenu(); }
-    function blockUser() { alert("Blocked " + chatWithName); toggleMenu(); }
-
-    // Load DP
-    db.ref("users/" + chatWith).once("value", snap => {
-      const data = snap.val() || {};
-      const dp = document.getElementById("chatDp");
-      if (data.dp) dp.innerHTML = `<img src="${data.dp}" style="width:100%;height:100%;object-fit:cover;">`;
-      else dp.innerText = (data.name ? data.name.charAt(0) : chatWith.charAt(0)).toUpperCase();
-    });
-
-    // Status
-    db.ref("status/" + chatWith).on("value", snap => {
-      const st = snap.val();
-      const el = document.getElementById("chatStatus");
-      if (!st) { el.innerText = "Offline"; el.style.color="gray"; }
-      else if (st.typing) { el.innerText = "Typing..."; el.style.color="blue"; }
-      else { el.innerText = "Online"; el.style.color="green"; }
-    });
-
-    // Messages
-    const chatBox = document.getElementById("chatBox");
-    function loadMessages() {
-      const chatId = [username, chatWith].sort().join("_");
-      db.ref("chats/" + chatId).on("child_added", snap => {
-        const data = snap.val();
-        const msgId = snap.key;
-        const div = document.createElement("div");
-        div.className = "msg " + (data.sender === username ? "me" : "other");
-        div.innerHTML = data.message;
-        div.dataset.id = msgId;
-
-        const t = document.createElement("div");
-        t.className = "time";
-        t.innerText = new Date(data.timestamp).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
-        div.appendChild(t);
-
-        // Swipe actions
-        const popup = document.createElement("div");
-        popup.className = "action-popup";
-        popup.innerHTML = `<span onclick="deleteMessage('${chatId}','${msgId}',this)">Delete</span> | <span onclick="cancelAction(this)">Cancel</span>`;
-        div.appendChild(popup);
-
-        let startX = 0;
-        div.addEventListener("touchstart", e => startX = e.touches[0].clientX);
-        div.addEventListener("touchend", e => {
-          let endX = e.changedTouches[0].clientX;
-          if (Math.abs(endX - startX) > 60) {
-            popup.style.display = "flex";
-          }
-        });
-
-        chatBox.appendChild(div);
-        chatBox.scrollTop = chatBox.scrollHeight;
-      });
-    }
-    loadMessages();
-
-    function deleteMessage(chatId, msgId, el) {
-      db.ref("chats/" + chatId + "/" + msgId).remove();
-      el.closest(".msg").remove();
-    }
-    function cancelAction(el) {
-      el.closest(".action-popup").style.display = "none";
-    }
-
-    // Send message
-    function sendMessage() {
-      const input = document.getElementById("msgInput");
-      const text = input.value.trim();
-      if (!text) return;
-      const chatId = [username, chatWith].sort().join("_");
-      const msgRef = db.ref("chats/" + chatId).push();
-      msgRef.set({ sender: username, message: text, timestamp: Date.now() });
-      input.value = "";
-      setTyping(false);
-    }
-
-    // Typing
-    function setTyping(state) {
-      db.ref("status/" + username).update({ typing: state });
-      if (state) {
-        clearTimeout(window.typingTimeout);
-        window.typingTimeout = setTimeout(()=>setTyping(false), 1500);
-      }
-    }
-
-    window.addEventListener("beforeunload", ()=> setTyping(false));
-  </script>
-</body>
-</html>
+      background: #f1f1f1;
+      border: 1px solid black;      
+      outline: none;      
+      font-size: 14px;      
+    }      
+    .send-btn {      
+      background: blueviolet;      
+      color: white;      
+      border: none;      
+      border-radius: 50%;      
+      width: 42px; height: 42px;      
+      font-size: 18px;      
+      display: flex; align-items: center; justify-content: center;      
+      cursor: pointer;      
+    }      
+  </style>      
+      
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">      
+</head>      
+<body>      
+      
+  <!-- Topbar -->      
+  <div class="topbar">      
+    <i class="fas fa-arrow-left back-btn" onclick="location.href='contacts.html'"></i>      
+    <div class="dp" id="chatDp" style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:blueviolet;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;"></div>      
+    <div class="chat-user">      
+      <b id="chatName">User</b>      
+      <small id="chatStatus">Offline</small>      
+    </div>      
+    <!-- Call options -->      
+    <i class="fas fa-phone call-btn" onclick="location.href='voicecall.html'"></i>      
+    <i class="fas fa-video call-btn" onclick="location.href='videocall.html'"></i>      
+    <!-- Menu -->      
+    <i class="fas fa-ellipsis-v menu-btn" onclick="toggleMenu()"></i>      
+    <div class="dropdown" id="menuDropdown">      
+      <div onclick="viewProfile()">👤 View Profile</div>      
+      <div onclick="unfollowUser()">🚫 Unfollow</div>      
+      <div onclick="blockUser()">⛔ Block</div>      
+    </div>      
+  </div>      
+      
+  <!-- Chat messages -->      
+  <div class="chat-box" id="chatBox"></div>      
+      
+  <!-- Input -->      
+  <div class="input-bar">      
+    <input type="text" id="msgInput" placeholder="Type a message..." oninput="setTyping(true)">      
+    <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>      
+  </div>      
+      
+  <!-- Firebase -->      
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>      
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>      
+      
+  <script>      
+    const firebaseConfig = {      
+      apiKey: "AIzaSyB6oF-osZPetNgNOv9p-QA6gMVn7gCJtRg",      
+      authDomain: "chatgram-app-a.firebaseapp.com",      
+      databaseURL: "https://chatgram-app-a-default-rtdb.firebaseio.com",      
+      projectId: "chatgram-app-a",      
+      storageBucket: "chatgram-app-a.appspot.com",      
+      messagingSenderId: "1067753841739",      
+      appId: "1:1067753841739:web:6f14d525d89737172799ce"      
+    };      
+    firebase.initializeApp(firebaseConfig);      
+    const db = firebase.database();      
+      
+    const username = localStorage.getItem("chat_username");      
+    const chatWith = localStorage.getItem("chat_with");      
+    const chatWithName = localStorage.getItem("chat_with_name");      
+      
+    if (!username || !chatWith) location.href = "contacts.html";      
+    document.getElementById("chatName").innerText = chatWithName || chatWith;      
+      
+    // Menu toggle      
+    function toggleMenu() {      
+      const menu = document.getElementById("menuDropdown");      
+      menu.style.display = (menu.style.display === "block") ? "none" : "block";      
+    }      
+    function viewProfile() { location.href = "users-profile.html?u=" + chatWith; }      
+    function unfollowUser() { alert("Unfollowed " + chatWithName); toggleMenu(); }      
+    function blockUser() { alert("Blocked " + chatWithName); toggleMenu(); }      
+      
+    // Load DP      
+    db.ref("users/" + chatWith).once("value", snap => {      
+      const data = snap.val() || {};      
+      const dp = document.getElementById("chatDp");      
+      if (data.dp) dp.innerHTML = `<img src="${data.dp}" style="width:100%;height:100%;object-fit:cover;">`;      
+      else dp.innerText = (data.name ? data.name.charAt(0) : chatWith.charAt(0)).toUpperCase();      
+    });      
+      
+    // Status      
+    db.ref("status/" + chatWith).on("value", snap => {      
+      const st = snap.val();      
+      const el = document.getElementById("chatStatus");      
+      if (!st) { el.innerText = "Offline"; el.style.color="gray"; }      
+      else if (st.typing) { el.innerText = "Typing..."; el.style.color="blue"; }      
+      else { el.innerText = "Online"; el.style.color="green"; }      
+    });      
+      
+    // Messages      
+    const chatBox = document.getElementById("chatBox");      
+    function loadMessages() {      
+      const chatId = [username, chatWith].sort().join("_");      
+      db.ref("chats/" + chatId).on("child_added", snap => {      
+        const data = snap.val();      
+        const msgId = snap.key;      
+        const div = document.createElement("div");      
+        div.className = "msg " + (data.sender === username ? "me" : "other");      
+        div.innerHTML = data.message;      
+        div.dataset.id = msgId;      
+      
+        const t = document.createElement("div");      
+        t.className = "time";      
+        t.innerText = new Date(data.timestamp).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});      
+        div.appendChild(t);      
+      
+        // Swipe actions      
+        const popup = document.createElement("div");      
+        popup.className = "action-popup";      
+        popup.innerHTML = `<span onclick="deleteMessage('${chatId}','${msgId}',this)">Delete</span> | <span onclick="cancelAction(this)">Cancel</span>`;      
+        div.appendChild(popup);      
+      
+        let startX = 0;      
+        div.addEventListener("touchstart", e => startX = e.touches[0].clientX);      
+        div.addEventListener("touchend", e => {      
+          let endX = e.changedTouches[0].clientX;      
+          if (Math.abs(endX - startX) > 60) {      
+            popup.style.display = "flex";      
+          }      
+        });      
+      
+        chatBox.appendChild(div);      
+        chatBox.scrollTop = chatBox.scrollHeight;      
+      });      
+    }      
+    loadMessages();      
+      
+    function deleteMessage(chatId, msgId, el) {      
+      db.ref("chats/" + chatId + "/" + msgId).remove();      
+      el.closest(".msg").remove();      
+    }      
+    function cancelAction(el) {      
+      el.closest(".action-popup").style.display = "none";      
+    }      
+      
+    // Send message      
+    function sendMessage() {      
+      const input = document.getElementById("msgInput");      
+      const text = input.value.trim();      
+      if (!text) return;      
+      const chatId = [username, chatWith].sort().join("_");      
+      const msgRef = db.ref("chats/" + chatId).push();      
+      msgRef.set({ sender: username, message: text, timestamp: Date.now() });      
+      input.value = "";      
+      setTyping(false);      
+    }      
+      
+    // Typing      
+    function setTyping(state) {      
+      db.ref("status/" + username).update({ typing: state });      
+      if (state) {      
+        clearTimeout(window.typingTimeout);      
+        window.typingTimeout = setTimeout(()=>setTyping(false), 1500);      
+      }      
+    }      
+      
+    window.addEventListener("beforeunload", ()=> setTyping(false));      
+  </script>      
+</body>      
+      </html>
